@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morpho Integration Blueprint — Demo App</title>
+<style>
+:root{
+  --bg:#080A0F; --bg2:#0C0F16; --panel:#12161F; --panel2:#161B26;
+  --border:#232A38; --border2:#2E3646;
+  --text:#EAECF1; --muted:#8B94A7; --muted2:#5D6577;
+  --accent:#3B6EF6; --accent2:#5A86FF; --accent-soft:rgba(59,110,246,.14);
+  --green:#31C48D; --green-soft:rgba(49,196,141,.14);
+  --amber:#F5A623; --amber-soft:rgba(245,166,35,.14);
+  --red:#F0616D; --red-soft:rgba(240,97,109,.14);
+  --radius:14px; --radius-sm:10px;
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'SFMono-Regular',ui-monospace,'Roboto Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font); background:
+    radial-gradient(1100px 620px at 82% -8%, rgba(59,110,246,.16), transparent 60%),
+    radial-gradient(820px 520px at 6% 4%, rgba(90,134,255,.08), transparent 55%),
+    var(--bg);
+  color:var(--text); -webkit-font-smoothing:antialiased; line-height:1.5;
+  min-height:100vh;
+}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.mono{font-family:var(--mono)}
+
+/* Layout */
+.app{max-width:1180px;margin:0 auto;padding:22px 24px 80px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 22px}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+.brand .logo{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand .logo svg{width:28px;height:22px;display:block}
+.brand b{font-size:15.5px;letter-spacing:-.2px}
+.brand span{color:var(--muted);font-size:12.5px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.pill{font-size:11.5px;color:var(--muted);border:1px solid var(--border);padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.02)}
+.pill.demo{color:var(--amber);border-color:rgba(245,166,35,.3);background:var(--amber-soft)}
+.wallet{display:flex;align-items:center;gap:8px;font-size:12.5px;border:1px solid var(--border);padding:6px 12px;border-radius:999px;background:var(--panel)}
+.wallet .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* Home */
+.hero{margin:4px 2px 26px}
+.hero h1{font-size:30px;letter-spacing:-.7px;font-weight:680;margin-bottom:10px;max-width:760px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#8AB0FF,#5A86FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:14.5px;max-width:680px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr) 0.72fr;gap:14px;margin-top:26px;align-items:stretch}
+.card{position:relative;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2));
+  padding:20px;cursor:pointer;transition:.18s;overflow:hidden;min-height:212px;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:var(--shadow)}
+.card .glow{position:absolute;inset:0;opacity:.5;pointer-events:none}
+.card.earn .glow{background:radial-gradient(280px 130px at 80% 0%,rgba(49,196,141,.16),transparent 70%)}
+.card.variable .glow{background:radial-gradient(280px 130px at 80% 0%,rgba(59,110,246,.18),transparent 70%)}
+.card.fixed .glow{background:radial-gradient(280px 130px at 80% 0%,rgba(138,80,255,.18),transparent 70%)}
+.card.dash{padding:16px;background:rgba(255,255,255,.015);border-style:dashed;min-height:auto}
+.card.dash:hover{background:rgba(255,255,255,.03);box-shadow:none;transform:none;border-color:var(--border2)}
+.card.dash .ico{width:30px;height:30px;font-size:14px;margin-bottom:10px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.card.dash .sub{color:var(--muted2);font-size:10px;letter-spacing:.6px}
+.card.dash h3{font-size:14px;margin-bottom:5px}
+.card.dash p{font-size:11.5px;line-height:1.5;color:var(--muted2)}
+.card.dash .go{font-size:11.5px;color:var(--muted)}
+.card.dash:hover .go{color:var(--text)}
+.card .ico{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px}
+.card.earn .ico{background:var(--green-soft);border:1px solid rgba(49,196,141,.3)}
+.card.variable .ico{background:var(--accent-soft);border:1px solid rgba(59,110,246,.32)}
+.card.fixed .ico{background:rgba(138,80,255,.14);border:1px solid rgba(138,80,255,.34)}
+.card h3{font-size:16.5px;letter-spacing:-.2px;margin-bottom:6px}
+.card .sub{font-size:12px;color:var(--accent2);font-weight:600;margin-bottom:9px}
+.card.earn .sub{color:var(--green)}
+.card.fixed .sub{color:#a98bff}
+.card p{font-size:13px;color:var(--muted);flex:1}
+.card .go{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--text);margin-top:14px}
+.card .go svg{transition:.18s}
+.card:hover .go svg{transform:translateX(4px)}
+.cardfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.cardfoot .go{margin-top:0}
+.learn{font-size:12px;font-weight:500;color:var(--muted2);text-decoration:none;white-space:nowrap;transition:.14s}
+.learn:hover{color:var(--text)}
+.home-note{margin-top:26px;border:1px dashed var(--border2);border-radius:var(--radius);padding:16px 18px;background:rgba(59,110,246,.04);font-size:12.8px;color:var(--muted);display:flex;gap:12px;align-items:flex-start}
+.home-note b{color:var(--text)}
+.home-note .k{color:var(--accent2)}
+
+/* Flow shell */
+.flow-head{display:flex;align-items:center;gap:14px;margin:2px 2px 20px}
+.back{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);border:1px solid var(--border);padding:7px 13px;border-radius:9px;background:var(--panel);transition:.15s}
+.back:hover{color:var(--text);border-color:var(--border2)}
+.flow-title{display:flex;align-items:center;gap:10px}
+.flow-title .fico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.flow-title h2{font-size:18px;letter-spacing:-.3px}
+.flow-title .tag{font-size:11.5px;color:var(--muted);font-weight:500}
+
+/* Stepper */
+.stepper{display:flex;gap:6px;margin:0 2px 22px;flex-wrap:wrap}
+.stepper .st{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted2);padding:6px 4px}
+.stepper .st .num{width:20px;height:20px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;color:var(--muted2);flex-shrink:0}
+.stepper .st.active{color:var(--text)}
+.stepper .st.active .num{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+.stepper .st.done{color:var(--muted)}
+.stepper .st.done .num{background:var(--green);border-color:var(--green);color:#04150E}
+.stepper .st.nav{cursor:pointer;border-radius:8px;transition:.14s}
+.stepper .st.nav:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.stepper .st.nav:hover .num{box-shadow:0 0 0 4px rgba(49,196,141,.18)}
+.stepper .sep{width:16px;height:1px;background:var(--border);align-self:center}
+
+/* Panels & grid */
+.grid{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2));padding:20px}
+.panel h4{font-size:15px;letter-spacing:-.2px;margin-bottom:4px}
+.panel .desc{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted2);font-weight:700;margin:2px 0 11px}
+
+/* Option list (vaults/markets) */
+.opt{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 15px;margin-bottom:11px;cursor:pointer;transition:.15s;background:var(--bg2)}
+.opt:hover{border-color:var(--border2);background:var(--panel2)}
+.opt.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--panel2)}
+.opt-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.opt-id{display:flex;align-items:center;gap:11px}
+.tok{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;position:relative;overflow:hidden}
+.tok img,.tok svg{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.tok.pair{position:relative;overflow:visible;background:none!important}
+.tok.pair .tok{position:absolute;top:0}
+.tokinline{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;white-space:nowrap}
+.tokinline .tok{flex-shrink:0}
+.avset{display:inline-flex;align-items:center;vertical-align:middle}
+.avset .av{margin-left:-7px;position:relative;cursor:default;transition:transform .12s}
+.avset .av:first-child{margin-left:0}
+.avset .av .tok{box-shadow:0 0 0 2px var(--bg2)}
+.avset .av:hover{transform:translateY(-2px);z-index:6}
+.avset .av .tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(3px);background:var(--panel2);border:1px solid var(--border2);color:var(--muted);font-size:11px;font-weight:500;padding:7px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:.13s;box-shadow:var(--shadow);z-index:20;text-align:center}
+.avset .av .tip b{color:var(--text);font-weight:600}
+.avset .av .tip .tipx{display:block;margin-top:3px;color:var(--accent2);font-weight:600;font-size:10.5px}
+.avset .av:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+.avset .av .tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--panel2)}
+.opt-name{font-size:14px;font-weight:600}
+.opt-meta{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chiptag{font-size:10.5px;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted)}
+.opt-apy{text-align:right}
+.opt-apy .v{font-size:17px;font-weight:700;color:var(--green)}
+.opt-apy .l{font-size:10.5px;color:var(--muted2)}
+.opt-stats{display:flex;gap:20px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.opt-stats .s{font-size:11px}
+.opt-stats .s .l{color:var(--muted2);margin-bottom:2px}
+.opt-stats .s .v{font-weight:600;font-size:12.5px}
+.warnrow{margin-top:10px;font-size:11.5px;color:var(--amber);display:flex;gap:7px;align-items:center}
+
+/* Stat rows */
+.rows{display:flex;flex-direction:column;gap:1px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.035)}
+.row:last-child{border-bottom:none}
+.row .l{color:var(--muted);display:flex;align-items:center;gap:6px}
+.row .v{font-weight:600;text-align:right}
+.row .v.pos{color:var(--green)} .row .v.neg{color:var(--red)} .row .v.warn{color:var(--amber)}
+.row .v .prev{color:var(--muted2);font-weight:500}
+.row .v .arw{color:var(--muted2);margin:0 8px;font-weight:400}
+.row.big{padding:12px 0}
+.row.big .v{font-size:16px}
+.help{width:14px;height:14px;border-radius:50%;border:1px solid var(--border2);font-size:9px;color:var(--muted2);display:inline-flex;align-items:center;justify-content:center;cursor:help}
+
+/* Inputs */
+.field{margin-bottom:16px}
+.field label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.field label .bal{color:var(--muted2)}
+.field label .bal b{color:var(--muted);font-weight:600}
+.inp{display:flex;align-items:center;gap:10px;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg);transition:.15s}
+.inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.inp input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:19px;font-weight:600;width:100%;font-family:var(--mono)}
+.inp .assetbtn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;background:var(--panel2);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
+.inp .maxbtn{font-size:11px;font-weight:700;color:var(--accent2);padding:5px 9px;border-radius:7px;background:var(--accent-soft)}
+.inp .maxbtn:hover{background:rgba(59,110,246,.24)}
+.usdsub{font-size:11.5px;color:var(--muted2);margin-top:7px;padding-left:3px}
+.quickset{display:flex;gap:6px;margin-top:9px}
+.quickset button{flex:1;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--bg2);transition:.12s}
+.quickset button:hover{border-color:var(--border2);color:var(--text)}
+.quickset button.on{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
+
+/* Health bar */
+.health{margin:6px 0 2px}
+.health-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:8px}
+.health-top .hf{font-weight:700;font-size:15px}
+.hbar{height:9px;border-radius:6px;background:linear-gradient(90deg,var(--red),var(--amber) 42%,var(--green) 78%);position:relative;overflow:visible}
+.hbar .mark{position:absolute;top:-4px;width:3px;height:17px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.5);transition:left .35s cubic-bezier(.2,.8,.2,1)}
+.hbar .liq{position:absolute;top:-3px;width:2px;height:15px;background:var(--red);opacity:.8}
+.hscale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:6px}
+
+/* Buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;border-radius:var(--radius-sm);font-size:14px;font-weight:650;transition:.15s;background:var(--accent);color:#fff;box-shadow:0 6px 20px rgba(59,110,246,.32)}
+.btn:hover{background:var(--accent2)}
+.btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--border2);box-shadow:none}
+.btn.ghost:hover{border-color:var(--muted2);background:var(--panel)}
+.btn.sm{padding:10px;font-size:13px;width:auto;padding-left:16px;padding-right:16px}
+.btn.danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(240,97,109,.35);box-shadow:none}
+.btn.danger:hover{background:rgba(240,97,109,.22)}
+.btn-row{display:flex;gap:10px;margin-top:8px}
+
+/* Bundle / review */
+.bundle{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);overflow:hidden;margin-bottom:16px}
+.bundle-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--panel2)}
+.bundle-head .t{font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px}
+.bundle-head .badge{font-size:11px;font-weight:700;color:var(--accent2);background:var(--accent-soft);padding:4px 9px;border-radius:7px}
+.bstep{display:flex;align-items:center;gap:12px;padding:12px 15px;border-top:1px solid var(--border);font-size:12.5px}
+.bstep .bnum{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:.2s}
+.bstep.active .bnum{background:var(--accent);border-color:var(--accent);color:#fff}
+.bstep.done .bnum{background:var(--green);border-color:var(--green);color:#04150E}
+.bstep .bt{flex:1}
+.bstep .bt b{font-weight:600} .bstep .bt .d{font-size:11px;color:var(--muted2);margin-top:1px}
+.bstep .spin{width:15px;height:15px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bstep .chk{color:var(--green);font-size:14px}
+.quote-timer{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;background:var(--accent-soft);font-size:12px;border-radius:var(--radius-sm);margin-bottom:14px}
+.quote-timer .ring{display:flex;align-items:center;gap:8px;color:var(--accent2);font-weight:600}
+.quote-timer .refresh{font-size:11.5px;color:var(--muted)}
+
+/* Confirmation */
+.confirm-hero{text-align:center;padding:12px 0 22px}
+.confirm-hero .ok{width:64px;height:64px;border-radius:50%;background:var(--green-soft);border:1px solid rgba(49,196,141,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:30px;animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.confirm-hero h3{font-size:20px;letter-spacing:-.3px;margin-bottom:6px}
+.confirm-hero p{color:var(--muted);font-size:13px}
+.txhash{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:11.5px;color:var(--muted);border:1px solid var(--border);padding:6px 12px;border-radius:8px;background:var(--bg2)}
+
+/* Dashboard */
+.dash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+.dash-head .lead{display:flex;align-items:center;gap:13px}
+.dash-title{font-size:16px;font-weight:650}
+.dash-sub{font-size:12px;color:var(--muted)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:14px 15px}
+.metric .l{font-size:11px;color:var(--muted2);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.metric .v{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.metric .v small{font-size:12px;color:var(--muted);font-weight:500}
+.metric .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.metric.accent .v{color:var(--accent2)}
+.badge-h{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+.badge-h.safe{color:var(--green);background:var(--green-soft)}
+.badge-h.mod{color:var(--amber);background:var(--amber-soft)}
+.badge-h.risk{color:var(--red);background:var(--red-soft)}
+.alloc{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.alloc-row{font-size:12px}
+.alloc-row .top{display:flex;justify-content:space-between;margin-bottom:4px}
+.alloc-row .top .n{color:var(--text);font-weight:500}
+.alloc-row .top .p{color:var(--muted)}
+.alloc-bar{height:6px;border-radius:4px;background:var(--panel2);overflow:hidden}
+.alloc-bar .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.countdown{display:flex;gap:10px;margin-top:6px}
+.cd-cell{flex:1;text-align:center;border:1px solid var(--border);border-radius:9px;padding:10px 4px;background:var(--bg2)}
+.cd-cell .n{font-size:20px;font-weight:700;font-family:var(--mono)}
+.cd-cell .u{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+.poslist{display:flex;flex-direction:column;gap:10px}
+.dsec{margin-bottom:26px}
+.dsec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:11px}
+.dsec-t{font-size:15px;font-weight:650;letter-spacing:-.2px}
+.dsec-s{font-size:11.5px;color:var(--muted2)}
+.dsub{margin-bottom:14px}
+.dsub-t{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:var(--muted);margin:0 0 9px 2px}
+.posrow{display:flex;align-items:center;gap:20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2));padding:16px 18px;cursor:pointer;transition:.15s;position:relative}
+.posrow:hover{border-color:var(--border2);background:var(--panel2);transform:translateY(-1px)}
+.posrow.risk{border-color:rgba(240,97,109,.32);background:linear-gradient(180deg,rgba(240,97,109,.07),rgba(240,97,109,.03))}
+.posrow.risk:hover{border-color:rgba(240,97,109,.5);background:linear-gradient(180deg,rgba(240,97,109,.11),rgba(240,97,109,.05))}
+.posrow.warn{border-color:rgba(245,166,35,.28);background:linear-gradient(180deg,rgba(245,166,35,.06),rgba(245,166,35,.02))}
+.posrow.warn:hover{border-color:rgba(245,166,35,.45);background:linear-gradient(180deg,rgba(245,166,35,.1),rgba(245,166,35,.04))}
+.posrow .id{display:flex;align-items:center;gap:12px;min-width:170px}
+.posrow .id .pn{font-size:14.5px;font-weight:600}
+.posrow .id .ps{font-size:11.5px;color:var(--muted)}
+.posrow .cells{display:flex;gap:28px;flex:1;flex-wrap:wrap}
+.posrow .cell .l{font-size:11px;color:var(--muted2);margin-bottom:3px;white-space:nowrap}
+.posrow .cell .v{font-size:15px;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.posrow .cell .v small{font-size:11px;color:var(--muted);font-weight:500}
+.posrow .cell .v.red,.posrow .cell .v.red small{color:var(--red)}
+.posrow .cell .v.amber,.posrow .cell .v.amber small{color:var(--amber)}
+.posrow .acts{display:flex;gap:8px;flex-shrink:0}
+.posrow .chev-r{color:var(--muted2);font-size:20px;line-height:1;flex-shrink:0}
+@media(max-width:1100px){.posrow .cells{gap:20px}}
+@media(max-width:820px){.posrow{flex-wrap:wrap}.posrow .cells{gap:18px}.posrow .chev-r{display:none}}
+.manage-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.maction{border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;background:var(--bg2);text-align:left;transition:.14s;cursor:pointer}
+.maction:hover{border-color:var(--border2);background:var(--panel2)}
+.maction .mt{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.maction .md{font-size:11px;color:var(--muted)}
+.maction .mi{font-size:14px}
+
+/* Blueprint annotation */
+.bp{margin-top:16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#0A0D13;overflow:hidden}
+.bp-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;background:rgba(59,110,246,.05)}
+.bp-head .t{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent2);display:flex;align-items:center;gap:8px}
+.bp-head .chev{color:var(--muted2);transition:.2s;font-size:11px}
+.bp.open .bp-head .chev{transform:rotate(180deg)}
+.bp-body{display:none;padding:14px;border-top:1px solid var(--border)}
+.bp.open .bp-body{display:block}
+.bp-body p{font-size:12px;color:var(--muted);margin-bottom:10px}
+.code{font-family:var(--mono);font-size:11.5px;background:#05070B;border:1px solid var(--border);border-radius:8px;padding:12px 13px;color:#C7D0E0;overflow-x:auto;white-space:pre;line-height:1.7}
+.code .kw{color:#7FA6FF} .code .fn{color:#6FE3B8} .code .st{color:#E3B675} .code .cm{color:#5D6577} .code .nm{color:#E39BC7}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(4,6,10,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px;animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:100%;max-width:460px;border:1px solid var(--border2);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2));box-shadow:var(--shadow);animation:rise .2s cubic-bezier(.2,.9,.3,1)}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+.modal-head h4{font-size:15px}
+.modal-head .x{color:var(--muted2);font-size:18px;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.modal-head .x:hover{background:var(--panel2);color:var(--text)}
+.modal-body{padding:20px}
+
+/* Toast */
+.toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:9px;align-items:center}
+.toast{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border2);border-radius:11px;padding:11px 16px;font-size:12.5px;box-shadow:var(--shadow);animation:rise .2s}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.toast.info .dot{background:var(--accent)}
+
+.muted{color:var(--muted)} .tiny{font-size:11px} .center{text-align:center}
+.spacer{height:14px}
+.hint{font-size:11.5px;color:var(--muted2);margin-top:10px;display:flex;gap:7px;align-items:flex-start;line-height:1.5}
+.divline{height:1px;background:var(--border);margin:16px 0}
+.legal{font-size:11px;color:var(--muted2);line-height:1.55;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center}
+.legal a{color:var(--accent2);text-decoration:underline}
+.legal a:hover{color:var(--accent)}
+.extlink{color:var(--accent2);text-decoration:none;border-bottom:1px dotted rgba(90,134,255,.5)}
+.extlink:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.ttip{position:relative;display:inline-flex;align-items:center}
+.ttip .qmark{width:14px;height:14px;border-radius:50%;border:1px solid var(--border2);font-size:9px;font-weight:700;color:var(--muted2);display:inline-flex;align-items:center;justify-content:center;cursor:help;transition:.12s}
+.ttip:hover .qmark{color:var(--text);border-color:var(--muted2);background:var(--panel2)}
+.ttip.warn .qmark{color:var(--amber);border-color:rgba(245,166,35,.45)}
+.ttip.warn:hover .qmark{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+.ttip .tip{position:absolute;bottom:calc(100% + 9px);left:-10px;width:236px;background:var(--panel2);border:1px solid var(--border2);color:var(--muted);font-size:11px;font-weight:500;line-height:1.55;padding:9px 11px;border-radius:8px;white-space:normal;text-align:left;opacity:0;pointer-events:none;transition:.13s;box-shadow:var(--shadow);z-index:30;transform:translateY(3px)}
+.ttip:hover .tip{opacity:1;transform:translateY(0)}
+.ttip .tip::after{content:"";position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:var(--panel2)}
+/* vault page: 2x2 main stats + collapsible advanced */
+/* overflow must stay visible so hover cards aren't clipped */
+.vstats{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);margin-top:16px}
+.vstat{padding:15px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:78px;display:flex;flex-direction:column;justify-content:center}
+.vstat:nth-child(2n){border-right:none}
+.vstat:nth-child(n+3){border-bottom:none}
+.vstat .l{font-size:11.5px;color:var(--muted2);margin-bottom:7px}
+.vstat .v{font-size:19px;font-weight:700;letter-spacing:-.3px}
+.showmore{display:flex;align-items:center;gap:12px;margin-top:16px}
+.showmore .ln{flex:1;height:1px;background:var(--border)}
+.showmore button{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:5px 11px;border-radius:8px;transition:.13s}
+.showmore button:hover{color:var(--text);background:var(--panel2)}
+.showmore button .cx{transition:transform .2s;font-size:10px}
+.showmore button.open .cx{transform:rotate(180deg)}
+.curb{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;margin-right:7px;vertical-align:middle}
+/* rate breakdown hover card */
+.hovercard{position:relative;display:inline-flex;align-items:center;cursor:help;border-bottom:1px dashed rgba(255,255,255,.22)}
+.hc{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(3px);width:206px;background:var(--panel2);border:1px solid var(--border2);border-radius:9px;padding:10px 12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.13s;z-index:40;text-align:left}
+.hovercard:hover .hc{opacity:1;transform:translateX(-50%) translateY(0)}
+.hc::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--panel2)}
+.hcrow{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11.5px;font-weight:500;color:var(--muted);padding:3px 0;letter-spacing:0}
+.hcrow b{color:var(--text);font-weight:600;font-family:var(--mono);font-size:11.5px}
+.hcrow b.pos{color:var(--green)}
+.hcrow.total{color:var(--text);font-weight:600}
+.hcrow.total b{color:var(--green)}
+.hcsep{display:block;height:1px;background:var(--border);margin:6px 0}
+.pbm{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;color:rgba(255,255,255,.72);white-space:nowrap;letter-spacing:-.1px}
+.pbm .mk{width:16px;height:13px;flex-shrink:0;margin:0 1px}
+.pbm b{color:rgba(255,255,255,.92);font-weight:500}
+.titlerow{display:flex;align-items:center;gap:11px;margin-bottom:5px}
+.titlerow h4{margin:0}
+.pbm-foot{display:flex;justify-content:center;margin-top:18px}
+.fade-in{animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1150px){.cards{grid-template-columns:repeat(2,1fr)}.card.dash{min-height:auto}}
+@media(max-width:900px){.cards{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand" onclick="go('home')">
+      <div class="logo"><svg viewBox="0 0 40 32" aria-label="Morpho" role="img"><path fill="#B4B9C0" d="M1.5 1C7 6 13.5 11 18 16c-4.5 5-11 10-16.5 15C0.6 21 0.6 11 1.5 1Z"/><path fill="#FFFFFF" d="M38.5 1C33 6 26.5 11 22 16c4.5 5 11 10 16.5 15 0.9-10 0.9-20 0-30Z"/></svg></div>
+      <div><b>Morpho</b> <span>· Integration Blueprint</span></div>
+    </div>
+    <div class="topbar-right" id="topbar-right"></div>
+  </div>
+  <div id="root"></div>
+</div>
+<div id="modal-root"></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+/* ============================================================
+   Morpho Integration Blueprint — mock demo app
+   Three product templates: Earn (Vaults), Variable Borrow (Blue),
+   Fixed Borrow (Midnight). All state in-memory. No storage APIs.
+   ============================================================ */
+
+const money = (n,d=2)=> n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd = (n)=> '$'+money(n, n>=1000?0:2);
+const pct = (n,d=2)=> money(n,d)+'%';
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+const S = {
+  route:'home',
+  product:null,      // 'earn' | 'variable' | 'fixed'
+  step:0,
+  sel:null,          // selected option index
+  form:{},
+  position:null,     // created position object
+  showAdv:false,     // vault page: advanced section expanded
+  quoteTimer:null,
+  countdownTimer:null,
+  dash:{earn:[],variable:[],fixed:[]},   // edge case sandbox
+  dashKind:null,     // which detail view the sandbox is showing
+};
+
+/* --- market/vault accessors --- */
+const cPrice   = m => m.price;
+const mLiq     = m => m.liq;                                   // market liquidity, $M
+const fmtLiq   = v => v>=1 ? '$'+v.toFixed(1)+'M' : v>=0.01 ? '$'+Math.round(v*1000)+'K' : '$'+Math.round(v*1e6).toLocaleString('en-US');
+const bidsOf   = m => m.bids;
+const vaultAvail = v => v.liq*1e6;                             // vault withdrawable, in asset units
+
+
+/* -------------------- MOCK DATA -------------------- */
+const COL = {
+  USDC:'#2775CA', WETH:'#627EEA', wstETH:'#00A3FF', cbBTC:'#F7931A',
+  USDT:'#26A17B', DAI:'#F5AC37', ezETH:'#7B61FF', WBTC:'#F09242', sUSDe:'#5AC8FA'
+};
+// Trust Wallet asset CDN by mainnet address (real logos); falls back to colored initials if offline.
+const ADDR = {
+  USDC:'0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', USDT:'0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  DAI:'0x6B175474E89094C44Da98b954EedeAC495271d0F', WETH:'0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+  WBTC:'0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', wstETH:'0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+  cbBTC:'0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', ezETH:'0xbf5495Efe5DB9ce00f80364C8B423567e58d2110',
+  sUSDe:'0x9D39A5DE30e57443BfF2A8307A4256c8797A3497'
+};
+const logoUrl = s => ADDR[s]?`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${ADDR[s]}/logo.png`:'';
+
+/* Brand-accurate inline logos for tokens the CDN doesn't carry.
+   Rendered directly (no network), so they're correct offline too. */
+const INLINE_LOGO = {
+  cbBTC: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#fff"/><circle cx="16" cy="16" r="14.5" fill="none" stroke="#0052FF" stroke-width="2"/><g transform="translate(6.6,6.6) scale(0.783)"><path fill="#0052FF" d="M17.062 12.72c1.63-.42 2.86-1.53 3.06-3.6-.28-2.83-2.72-3.78-5.8-4.05V1.16h-2.4v3.83c-.63 0-1.27.01-1.91.03V1.16h-2.4v3.91c-.52.01-1.03.02-1.53.02v-.01H2.77v2.56s1.77-.03 1.74 0c.97 0 1.28.56 1.37 1.05v4.46c.07 0 .15.01.25.02h-.25v6.24c-.04.31-.22.79-.9.79.03.03-1.74 0-1.74 0l-.48 2.86h3.13c.58 0 1.15.01 1.71.01v3.96h2.4v-3.91c.66.01 1.29.02 1.91.02v3.89h2.4v-3.95c4.04-.23 6.86-1.25 7.21-5.04.28-3.05-1.15-4.42-3.44-4.97zM9.03 7.68c1.35 0 5.59-.43 5.59 2.39 0 2.7-4.24 2.38-5.59 2.38V7.68zm0 12.42v-5.26c1.62 0 6.58-.46 6.58 2.63 0 2.96-4.96 2.62-6.58 2.62z"/></g></svg>`
+};
+function tok(s,size=30,extra=''){
+  const style=`width:${size}px;height:${size}px;font-size:${Math.round(size*0.36)}px;${extra}`;
+  if(INLINE_LOGO[s]) return `<div class="tok" style="${style}">${INLINE_LOGO[s]}</div>`;
+  const url=logoUrl(s);
+  return `<div class="tok" style="background:${COL[s]||'#5A86FF'};${style}">${s.slice(0,2).toUpperCase()}${url?`<img src="${url}" loading="lazy" onerror="this.remove()" alt="">`:''}</div>`;
+}
+const tokBadge = (s,small)=> tok(s, small?24:30);
+/* logo + symbol, inline inside a sentence (used in transaction recaps) */
+const tokInline = (s,size=18)=> `<span class="tokinline">${tok(s,size)}${s}</span>`;
+const NAMES = {USDC:'USD Coin', USDT:'Tether USD', DAI:'Dai', WETH:'Wrapped Ether', WBTC:'Wrapped Bitcoin',
+  wstETH:'Lido Wrapped stETH', cbBTC:'Coinbase Wrapped BTC', ezETH:'Renzo Restaked ETH', sUSDe:'Ethena Staked USDe'};
+/* net APY with a hover breakdown: vault APY + rewards APY */
+function apyHover(v, withApy=false){
+  return `<span class="hovercard">${pct(v.netApy)}${withApy?' APY':''}<span class="hc">
+    <span class="hcrow"><span>Vault APY</span><b>${pct(v.nativeApy)}</b></span>
+    <span class="hcrow"><span>Rewards APY</span><b class="pos">+${pct(v.rewards)}</b></span>
+    <span class="hcsep"></span>
+    <span class="hcrow total"><span>Net APY</span><b>${pct(v.netApy)}</b></span>
+  </span></span>`;
+}
+
+/* collateral exposure derived from the vault's allocation (single source of truth) */
+function exposureOf(v){
+  return v.alloc.filter(a=>a[0]!=='Idle').map(a=>[a[0].split(' / ')[0], a[1]]);
+}
+function collateralAvatars(v){
+  return `<span class="avset">${exposureOf(v).map(([s,p])=>
+    `<span class="av">${tok(s,22)}<span class="tip"><b>${NAMES[s]||s}</b> · ${s}<span class="tipx">${p}% of vault deposits</span></span></span>`
+  ).join('')}</span>`;
+}
+const pairBadge = (a,b,size=30)=> `<div class="tok pair" style="width:${Math.round(size*1.52)}px;height:${size}px">${tok(a,size,'left:0')}${tok(b,size,`left:${Math.round(size*0.52)}px;box-shadow:0 0 0 2px var(--bg2)`)}</div>`;
+
+const EXPLORER = 'https://basescan.org/address/';
+const CURATOR_COL = {'Gauntlet':'#6E56CF','Steakhouse':'#E5484D','Re7 Labs':'#0EA5E9'};
+const VAULTS = [
+  {asset:'USDC', name:'USDC', curator:'Gauntlet', chain:'Base', netApy:8.42, nativeApy:6.10, rewards:2.32, tvl:184.2, liq:41.6,
+   addr:'0x8eB67A509616cd6A7c1B3c8C21D48FF57df3d458', deployed:'Jan 6, 2026',
+   alloc:[['cbBTC / USDC',38],['wstETH / USDC',31],['WETH / USDC',22],['Idle',9]], warn:null,
+   collateral:'cbBTC, wstETH, WETH'},
+  {asset:'USDT', name:'USDT', curator:'Steakhouse', chain:'Base', netApy:7.38, nativeApy:7.08, rewards:0.30, tvl:96.7, liq:28.3,
+   addr:'0x3Fe6a295459FAe07DF8A0ceCC36F37146966e3A9', deployed:'Feb 18, 2026',
+   alloc:[['WETH / USDT',44],['cbBTC / USDT',33],['Idle',23]], warn:null, collateral:'WETH, cbBTC'},
+  {asset:'WETH', name:'WETH', curator:'Re7 Labs', chain:'Base', netApy:4.05, nativeApy:3.20, rewards:0.85, tvl:52.1, liq:0.0042,
+   addr:'0xA0Cb889707d426A7A386870A03bc70d1b0697598', deployed:'Mar 2, 2026',
+   alloc:[['wstETH / WETH',52],['ezETH / WETH',36],['Idle',12]], warn:'Most of this vault is lent out — withdrawals are capped until borrowers repay',
+   collateral:'wstETH, ezETH'},
+];
+const shortAddr = a => a.slice(0,6)+'…'+a.slice(-4);
+const curatorBadge = n => `<span class="curb" style="background:${CURATOR_COL[n]||'#5A86FF'}">${n[0]}</span>`;
+
+// origFee = integrator origination fee (%), added to the borrower's debt
+const MARKETS_V = [ // variable, Morpho Blue isolated
+  {loan:'USDC', col:'cbBTC', chain:'Base', oracle:'Chainlink cbBTC/USD', oracleUrl:'https://data.chain.link/feeds', irm:'AdaptiveCurve', lltv:86, apy:6.9, liq:22.4, rewards:1.1, origFee:0.15, price:64850},
+  {loan:'USDC', col:'wstETH', chain:'Base', oracle:'Chainlink wstETH/USD', oracleUrl:'https://data.chain.link/feeds', irm:'AdaptiveCurve', lltv:91.5, apy:5.4, liq:38.1, rewards:0.4, origFee:0.15, price:3420},
+  {loan:'WETH', col:'wstETH', chain:'Base', oracle:'Exchange rate + Chainlink', oracleUrl:'https://data.chain.link/feeds', irm:'AdaptiveCurve', lltv:94.5, apy:2.8, liq:14.7, rewards:0.0, origFee:0.10, price:1.172},
+  {loan:'USDC', col:'ezETH', chain:'Base', oracle:'Redstone ezETH/USD', oracleUrl:'https://app.redstone.finance/app/feeds/', irm:'AdaptiveCurve', lltv:77, apy:8.2, liq:0.5, rewards:2.6, origFee:0.20, price:3510, warn:'Restaking collateral — depeg & liquidity risk'},
+];
+
+// origFee = origination fee (%) charged on proceeds at borrow time
+const MARKETS_F = [ // fixed, Midnight
+  {loan:'USDC', col:'cbBTC', chain:'Base', maturity:'2026-09-30', days:84, lltv:86, oracle:'Chainlink cbBTC/USD', oracleUrl:'https://data.chain.link/feeds', bestApy:6.35, origFee:0.15, price:64850,
+   bids:[[6.35,120000],[6.55,340000],[6.80,500000]]},
+  {loan:'USDC', col:'wstETH', chain:'Base', maturity:'2026-12-31', days:176, lltv:91.5, oracle:'Chainlink wstETH/USD', oracleUrl:'https://data.chain.link/feeds', bestApy:7.10, origFee:0.15, price:3420,
+   bids:[[7.10,80000],[7.40,260000],[7.75,420000]]},
+  {loan:'USDC', col:'cbBTC', chain:'Base', maturity:'2026-08-15', days:38, lltv:86, oracle:'Chainlink cbBTC/USD', oracleUrl:'https://data.chain.link/feeds', bestApy:5.80, origFee:0.10, price:64850,
+   bids:[[5.80,200000],[6.05,300000],[6.30,450000]]},
+];
+
+const PRODUCTS = {
+  earn:{name:'Earn', tag:'Morpho Vaults', ico:'📈', color:'var(--green)',
+        steps:['Vaults','Deposit','Execute','Dashboard']},
+  variable:{name:'Variable-rate borrow', tag:'Morpho Blue', ico:'⚡', color:'var(--accent2)',
+        steps:['Markets','Borrow','Execute','Dashboard']},
+  fixed:{name:'Fixed-rate borrow', tag:'Morpho Midnight', ico:'🌙', color:'#a98bff',
+        steps:['Markets','Borrow','Execute','Dashboard']},
+  dash:{name:'Edge case sandbox', tag:'All products', ico:'▦', color:'var(--accent2)', steps:[]},
+};
+// clicking a vault/market card goes straight to its page (no intermediary confirm step)
+function pick(i){ S.sel=i; S.step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* -------------------- ROUTER -------------------- */
+function go(route, product){
+  clearTimers();
+  S.route=route; S.detail=false; S.dashKind=null;
+  if(route==='home'){ S.product=null; }
+  if(product){ S.product=product; S.step=0; S.sel=null; S.form={}; S.position=null; if(product==='dash') seedDash(); }
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function next(){ S.step++; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function prev(){ if(S.step>0){S.step--; render(); window.scrollTo({top:0,behavior:'smooth'});} }
+function goStep(i){ if(i<S.step){ clearTimers(); closeModal(); S.step=i; render(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function toggleAdv(){ S.showAdv=!S.showAdv; render(); }
+function clearTimers(){ if(S.quoteTimer)clearInterval(S.quoteTimer); if(S.countdownTimer)clearInterval(S.countdownTimer); S.quoteTimer=null;S.countdownTimer=null; }
+
+
+/* -------------------- RENDER DISPATCH -------------------- */
+function render(){
+  const root=document.getElementById('root');
+  if(S.route==='home'){ root.innerHTML=Home(); return; }
+  if(S.product==='earn')     root.innerHTML=shell(earnScreen());
+  if(S.product==='variable') root.innerHTML=shell(variableScreen());
+  if(S.product==='fixed')    root.innerHTML=shell(fixedScreen());
+  if(S.product==='dash')     root.innerHTML=shell(dashScreen());
+}
+
+/* -------------------- HOME -------------------- */
+function Home(){
+  return `
+  <div class="fade-in">
+    <div class="hero">
+      <h1>What a Morpho integration <em>looks like</em>.</h1>
+      <p>Three reference flows for teams integrating Morpho. Each one runs the full lifecycle — discover a market or vault, configure a position, execute, then manage it — and exposes the SDK and contract calls behind every step.</p>
+    </div>
+    <div class="cards">
+      <div class="card earn" onclick="go('flow','earn')">
+        <div class="glow"></div>
+        <div class="ico">📈</div>
+        <div class="sub">MORPHO VAULTS</div>
+        <h3>Earn</h3>
+        <p>Yield on idle assets. Deposits sit in a curated vault that lends them out and passes the return back to depositors.</p>
+        <div class="cardfoot">
+          <span class="go">Open demo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          <a class="learn" href="https://docs.morpho.org/learn/concepts/vault-v2/" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more ↗</a>
+        </div>
+      </div>
+      <div class="card variable" onclick="go('flow','variable')">
+        <div class="glow"></div>
+        <div class="ico">⚡</div>
+        <div class="sub">MORPHO BLUE</div>
+        <h3>Variable-rate borrow</h3>
+        <p>Liquidity without selling collateral. The borrowing rate moves with the market, and the loan stays open until it is repaid.</p>
+        <div class="cardfoot">
+          <span class="go">Open demo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          <a class="learn" href="https://docs.morpho.org/learn/concepts/blue/" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more ↗</a>
+        </div>
+      </div>
+      <div class="card fixed" onclick="go('flow','fixed')">
+        <div class="glow"></div>
+        <div class="ico">🌙</div>
+        <div class="sub">MORPHO MIDNIGHT</div>
+        <h3>Fixed-rate borrow</h3>
+        <p>Liquidity at a known cost. The borrowing rate is fixed until a maturity date, when the loan falls due.</p>
+        <div class="cardfoot">
+          <span class="go">Open demo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          <a class="learn" href="https://docs.morpho.org/learn/concepts/midnight/" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Learn more ↗</a>
+        </div>
+      </div>
+      <div class="card dash" onclick="go('flow','dash')">
+        <div class="ico">▦</div>
+        <div class="sub">ALL PRODUCTS</div>
+        <h3>Edge case sandbox</h3>
+        <p>Positions already in the states an integration has to handle: low liquidity, high LTV, near maturity.</p>
+        <div class="cardfoot">
+          <span class="go">Open demo <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </div>
+    </div>
+    <div class="home-note">
+      <span>💡</span>
+      <div><b>How to read this.</b> Every screen carries a collapsible <span class="k">Blueprint</span> panel showing the call underneath it — <span class="k mono">deposit()</span>, <span class="k mono">supplyCollateral()</span>, <span class="k mono">borrow()</span>, <span class="k mono">repay()</span>. Where the protocol allows it, approvals, quotes and multi-step sequences are bundled into one signature; that is the part most worth carrying into your own integration. Nothing here touches a chain — the numbers are simulated.</div>
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   COMBINED DASHBOARD — every product's positions in one interface
+   ===================================================================== */
+function seedDash(){
+  const sp=1.0842;
+  const mk=(i,col,borrow)=>{const m=MARKETS_V[i];const fee=borrow*m.origFee/100;
+    return {type:'variable', m, col, debt:borrow+fee, received:borrow, apy:m.apy, day:0};};
+  const fx=(i,col,recv,apy,days)=>{const m=MARKETS_F[i];const price=1/(1+apy/100*(m.days/365));
+    const units=recv/price; const fee=recv*m.origFee/100;
+    return {type:'fixed', m, col, debtUnits:units+fee, received:recv, blendedApy:apy, daysLeft:days??m.days};};
+  S.dash={
+    earn:[
+      {vault:VAULTS[0], deposited:48200, shares:48200/sp, sharePrice:sp, elapsedDays:34},
+      {vault:VAULTS[2], deposited:12500, shares:12500/sp, sharePrice:sp, elapsedDays:9},   // vault is short on liquidity
+    ],
+    // second variable loan sits at a high LTV; second fixed loan falls due in 3 days
+    variable:[ mk(0,1.4,52000), mk(1,26,74500) ],
+    fixed:[ fx(0,1.9,74000,6.41), fx(1,22,38000,7.18,3) ],
+  };
+}
+/* run an action against a specific row */
+function dashAct(kind,i,fn){ S.position=S.dash[kind][i]; window[fn](); }
+/* clicking a row opens that product's detail view, exactly as in its own demo */
+function dashOpen(kind,i){ S.position=S.dash[kind][i]; S.dashKind=kind; S.detail=true; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+/* a position closed from the combined view is removed from its section */
+function dashRemove(){
+  for(const k of ['earn','variable','fixed']){
+    const i=S.dash[k].indexOf(S.position);
+    if(i>-1){ S.dash[k].splice(i,1); break; }
+  }
+  S.position=null; S.detail=false; S.dashKind=null; render();
+}
+
+function dashEarnRow(p,i){
+  const v=p.vault, accrued=earnAccrued(p), value=p.deposited+accrued;
+  const capped=vaultAvail(v)<value;
+  return `<div class="posrow ${capped?'warn':''}" onclick="dashOpen('earn',${i})">
+    <div class="id">${tokBadge(v.asset)}<div><div class="pn">${v.name}</div><div class="ps">Earn</div></div></div>
+    <div class="cells">
+      <div class="cell"><div class="l">Position value</div><div class="v">${usd(value)}</div></div>
+      <div class="cell"><div class="l">APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
+      <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued)}</div></div>
+      ${capped?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v))} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
+    </div>
+    <div class="acts" onclick="event.stopPropagation()">
+      <button class="btn sm" onclick="dashAct('earn',${i},'openTopup')">Deposit</button>
+      <button class="btn ghost sm" onclick="dashAct('earn',${i},'openWithdraw')">Withdraw</button>
+    </div>
+    <span class="chev-r">›</span>
+  </div>`;
+}
+function dashVarRow(p,i){
+  const m=p.m, cv=p.col*cPrice(m), ltv=p.debt/cv*100, hf=(cv*m.lltv/100)/p.debt;
+  return `<div class="posrow ${ltvRisk(ltv,m.lltv)?'risk':''}" onclick="dashOpen('variable',${i})">
+    <div class="id">${pairBadge(m.col,m.loan)}<div><div class="pn">${m.col} / ${m.loan}</div><div class="ps">Variable</div></div></div>
+    <div class="cells">
+      <div class="cell"><div class="l">Debt</div><div class="v">${money(p.debt,0)} <small>${m.loan}</small></div></div>
+      <div class="cell"><div class="l">Collateral</div><div class="v">${money(p.col,3)} <small>${m.col}</small></div></div>
+      <div class="cell"><div class="l">APY · variable</div><div class="v">${pct(m.apy)}</div></div>
+      <div class="cell"><div class="l">LTV</div><div class="v ${ltvRisk(ltv,m.lltv)?'red':''}">${pct(ltv,1)} ${healthBadge(hf)}</div></div>
+    </div>
+    <div class="acts" onclick="event.stopPropagation()">
+      <button class="btn sm" onclick="dashAct('variable',${i},'openRepay')">Repay</button>
+      <button class="btn ghost sm" onclick="dashAct('variable',${i},'openAddCol')">Add collateral</button>
+    </div>
+    <span class="chev-r">›</span>
+  </div>`;
+}
+function dashFxRow(p,i){
+  const m=p.m, cv=p.col*cPrice(m), ltv=p.debtUnits/cv*100, hf=(cv*m.lltv/100)/p.debtUnits;
+  const matured=p.daysLeft<=0, days=Math.max(0,Math.floor(p.daysLeft));
+  const risky=ltvRisk(ltv,m.lltv)||matRisk(p)||matured;
+  return `<div class="posrow ${risky?'risk':''}" onclick="dashOpen('fixed',${i})">
+    <div class="id">${pairBadge(m.col,m.loan)}<div><div class="pn">${m.col} / ${m.loan}</div><div class="ps">Fixed · ${m.maturity}</div></div></div>
+    <div class="cells">
+      <div class="cell"><div class="l">Loan at maturity</div><div class="v">${money(p.debtUnits,0)} <small>${m.loan}</small></div></div>
+      <div class="cell"><div class="l">Collateral</div><div class="v">${money(p.col,3)} <small>${m.col}</small></div></div>
+      <div class="cell"><div class="l">APY · fixed</div><div class="v" style="color:#a98bff">${pct(p.blendedApy)}</div></div>
+      <div class="cell"><div class="l">${matured?'Status':'Matures in'}</div><div class="v ${matRisk(p)?'red':''}">${matured?'<span class="badge-h risk">Matured</span>':days+' <small>days</small>'}</div></div>
+      <div class="cell"><div class="l">LTV</div><div class="v ${ltvRisk(ltv,m.lltv)?'red':''}">${pct(ltv,1)} ${healthBadge(hf)}</div></div>
+    </div>
+    <div class="acts" onclick="event.stopPropagation()">
+      <button class="btn sm" onclick="dashAct('fixed',${i},'fxRepay')">Repay</button>
+      <button class="btn ghost sm" onclick="dashAct('fixed',${i},'openAddColFixed')">Add collateral</button>
+    </div>
+    <span class="chev-r">›</span>
+  </div>`;
+}
+function dashTotals(){
+  const supplied=S.dash.earn.reduce((a,p)=>a+p.deposited+earnAccrued(p),0);
+  const borrowed=S.dash.variable.reduce((a,p)=>a+p.debt,0)+S.dash.fixed.reduce((a,p)=>a+p.debtUnits,0);
+  const collateral=[...S.dash.variable,...S.dash.fixed].reduce((a,p)=>a+p.col*cPrice(p.m),0);
+  return {supplied,borrowed,collateral};
+}
+function dashScreen(){
+  if(S.detail && S.position){
+    return S.dashKind==='earn' ? earnDetail() : S.dashKind==='variable' ? varDetail() : fxDetail();
+  }
+  const {supplied,borrowed,collateral}=dashTotals();
+  const sec=(title,sub,rows)=>rows.length?`<div class="dsec">
+      <div class="dsec-head"><span class="dsec-t">${title}</span>${sub?`<span class="dsec-s">${sub}</span>`:''}</div>
+      <div class="poslist">${rows}</div>
+    </div>`:'';
+  return `<div class="fade-in">
+    <div class="dash-head"><div><div class="dash-title">Your positions</div><div class="dash-sub">Earn and Borrow, including positions that need attention</div></div></div>
+    <div class="metrics" style="margin-bottom:22px">
+      <div class="metric accent"><div class="l">Supplied</div><div class="v">${usd(supplied)}</div><div class="sub">${S.dash.earn.length} vault${S.dash.earn.length===1?'':'s'}</div></div>
+      <div class="metric"><div class="l">Borrowed</div><div class="v">${usd(borrowed)}</div><div class="sub">${S.dash.variable.length+S.dash.fixed.length} loans</div></div>
+      <div class="metric"><div class="l">Collateral</div><div class="v">${usd(collateral)}</div><div class="sub">locked</div></div>
+      <div class="metric"><div class="l">Net</div><div class="v" style="color:var(--green)">${usd(supplied+collateral-borrowed)}</div><div class="sub">supplied + collateral − debt</div></div>
+    </div>
+    ${sec('Earn','Morpho Vaults',S.dash.earn.map(dashEarnRow).join(''))}
+    ${S.dash.variable.length||S.dash.fixed.length?`<div class="dsec">
+      <div class="dsec-head"><span class="dsec-t">Borrow</span></div>
+      ${S.dash.variable.length?`<div class="dsub"><div class="dsub-t">Variable rate <span class="chiptag">Morpho Blue</span></div><div class="poslist">${S.dash.variable.map(dashVarRow).join('')}</div></div>`:''}
+      ${S.dash.fixed.length?`<div class="dsub"><div class="dsub-t">Fixed rate <span class="chiptag">Morpho Midnight</span></div><div class="poslist">${S.dash.fixed.map(dashFxRow).join('')}</div></div>`:''}
+    </div>`:''}
+    ${(!S.dash.earn.length&&!S.dash.variable.length&&!S.dash.fixed.length)?`<div class="panel center" style="padding:38px"><div class="muted">All positions closed.</div><div class="spacer"></div><button class="btn sm" onclick="seedDash();render()" style="margin:0 auto">Reset positions</button></div>`:''}
+  </div>`;
+}
+
+/* -------------------- SHELL (flow header + stepper) -------------------- */
+function shell(inner){
+  const p=PRODUCTS[S.product];
+  // detail views render their own header ("← Positions"); don't stack a second back button + stale stepper on top
+  if(S.detail) return `<div class="fade-in"><div id="screen">${inner}</div></div>`;
+  if(!p.steps.length) return `
+  <div class="fade-in">
+    <div class="flow-head">
+      <button class="back" onclick="go('home')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> All demos</button>
+      <div class="flow-title">
+        <div class="fico" style="background:var(--accent-soft)">${p.ico}</div>
+        <div><h2>${p.name}</h2><div class="tag">${p.tag}</div></div>
+      </div>
+    </div>
+    <div id="screen">${inner}</div>
+  </div>`;
+  const steps=p.steps.map((s,i)=>{
+    const cls=i===S.step?'active':(i<S.step?'done':'');
+    const clickable=i<S.step;
+    return `<div class="st ${cls} ${clickable?'nav':''}" ${clickable?`onclick="goStep(${i})" title="Back to ${s.replace(/"/g,'')}"`:''}><span class="num">${i<S.step?'✓':i+1}</span>${s}</div>`;
+  }).join('<span class="sep"></span>');
+  return `
+  <div class="fade-in">
+    <div class="flow-head">
+      <button class="back" onclick="go('home')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> All demos</button>
+      <div class="flow-title">
+        <div class="fico" style="background:${S.product==='earn'?'var(--green-soft)':S.product==='fixed'?'rgba(138,80,255,.14)':'var(--accent-soft)'}">${p.ico}</div>
+        <div><h2>${p.name}</h2><div class="tag">${p.tag}</div></div>
+      </div>
+    </div>
+    <div class="stepper">${steps}</div>
+    <div id="screen">${inner}</div>
+  </div>`;
+}
+
+/* -------------------- Blueprint annotation component -------------------- */
+function bp(title, desc, code){
+  return `<div class="bp">
+    <div class="bp-head" onclick="this.parentElement.classList.toggle('open')">
+      <div class="t"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Blueprint · ${title}</div>
+      <span class="chev">▾</span>
+    </div>
+    <div class="bp-body"><p>${desc}</p><div class="code">${code}</div></div>
+  </div>`;
+}
+
+/* legal footer — shown on the first (initial) deposit/borrow confirmation */
+function legalFooter(){
+  return `<div class="legal">Accessing the Morpho Protocol through this app is governed by XXX's Terms of Use and <a href="https://morpho.org/disclaimers/" target="_blank" rel="noopener noreferrer">Morpho's Disclaimer</a>. By using it, you acknowledge that you have read and understood these terms and the risks involved.</div>`;
+}
+
+/* "Powered by Morpho" badge — butterfly mark traced from the dark-mode lockup.
+   Swap MORPHO_MARK for the official <svg>…</svg> to use the exact artwork. */
+const MORPHO_MARK = `<svg class="mk" viewBox="0 0 40 32" aria-hidden="true" focusable="false">
+  <path fill="#B4B9C0" d="M1.5 1C7 6 13.5 11 18 16c-4.5 5-11 10-16.5 15C0.6 21 0.6 11 1.5 1Z"/>
+  <path fill="#FFFFFF" d="M38.5 1C33 6 26.5 11 22 16c4.5 5 11 10 16.5 15 0.9-10 0.9-20 0-30Z"/>
+</svg>`;
+function poweredBy(){ return `<span class="pbm">Powered by ${MORPHO_MARK}<b>Morpho</b></span>`; }
+
+/* hover tooltip for a row label */
+function tip(text){ return `<span class="ttip"><span class="qmark">?</span><span class="tip">${text}</span></span>`; }
+function tipWarn(text){ return `<span class="ttip warn"><span class="qmark">!</span><span class="tip">${text}</span></span>`; }
+const MATURITY_TIP = 'The whole term\u2019s interest is charged the moment you borrow \u2014 it does not build up day by day. Repaying early costs the same as repaying at maturity.';
+const VAULT_LIQ_TIP = 'A vault can only pay out what is idle plus what it can pull back from its markets. When borrowers have drawn most of the supply, withdrawals are capped until they repay or an allocator reallocates.';
+const LIQ_TIP = 'Capped by the loan assets currently available in this market. Lenders\u2019 supply is drawn down by other borrowers; the cap rises as they repay or as lenders supply more.';
+const FEE_TIP = 'Charged by this app, not by Morpho. You receive the full amount you entered — the fee is added to your debt and repaid along with it.';
+
+/* helper: stat row */
+function R(l,v,cls='',help){ return `<div class="row"><span class="l">${l}${help?`<span class="help" title="${help}">?</span>`:''}</span><span class="v ${cls}">${v}</span></div>`; }
+function Rbig(l,v,cls=''){ return `<div class="row big"><span class="l">${l}</span><span class="v ${cls}">${v}</span></div>`; }
+/* simulation row: previous state → new state (only shows the arrow when it changes) */
+function Rd(l,prev,next,cls=''){
+  const changed = String(prev)!==String(next);
+  return `<div class="row"><span class="l">${l}</span><span class="v ${cls}">${changed?`<span class="prev">${prev}</span><span class="arw">→</span>${next}`:next}</span></div>`;
+}
+const val=id=>{const e=document.getElementById(id);return e?(parseFloat((e.value||'').replace(/,/g,''))||0):0;};
+const setVal=(id,v)=>{const e=document.getElementById(id);if(e){e.value=v;e.dispatchEvent(new Event('input'));}};
+
+/* USD value shown under every amount input */
+const PRICE_USD = {USDC:1, USDT:1, DAI:1, sUSDe:1.05, WETH:2920, wstETH:3420, ezETH:3510, cbBTC:64850, WBTC:64850};
+const usdOf = (sym,amt)=> (PRICE_USD[sym]||0)*amt;
+const usdSub = (inputId,sym,amt=0)=> `<div class="usdsub" id="usd_${inputId}">${usd(usdOf(sym,amt))}</div>`;
+function updUsd(inputId,sym){ const e=document.getElementById('usd_'+inputId); if(e) e.textContent=usd(usdOf(sym,val(inputId))); }
+
+/* Liquidation price is neutral (white) until the position is actually close to it.
+   Buffer = how far LTV sits below LLTV: 100% = no debt, 0% = at liquidation. */
+/* is the position actually in the danger zone? drives red styling on the dashboard row */
+const ltvRisk = (ltv,lltv)=> liqCls(ltv,lltv)==='neg';       // <10% buffer to liquidation
+const matRisk = p => p && p.daysLeft>0 && p.daysLeft<=7;     // fixed loan falls due within a week
+function liqCls(ltv,lltv){
+  if(!ltv||ltv<=0) return '';
+  const buffer=1-ltv/lltv;
+  return buffer>=0.20 ? '' : buffer>=0.10 ? 'warn' : 'neg';
+}
+
+/* health badge from HF */
+function healthBadge(hf){
+  if(hf>=1.6) return `<span class="badge-h safe">Healthy</span>`;
+  if(hf>=1.2) return `<span class="badge-h mod">Moderate</span>`;
+  return `<span class="badge-h risk">At risk</span>`;
+}
+function healthBar(hf, liqPct){
+  // map HF 1.0..2.5 to 0..100
+  const pos=clamp((hf-1.0)/1.5,0,1)*100;
+  return `<div class="health">
+    <div class="health-top"><span class="muted">Health factor</span><span class="hf" style="color:${hf>=1.6?'var(--green)':hf>=1.2?'var(--amber)':'var(--red)'}">${hf===Infinity?'∞':money(hf,2)}</span></div>
+    <div class="hbar"><div class="liq" style="left:0%"></div><div class="mark" style="left:${pos}%"></div></div>
+    <div class="hscale"><span>1.00 · liquidation</span><span>safe →</span></div>
+  </div>`;
+}
+
+/* =====================================================================
+   EARN FLOW
+   ===================================================================== */
+function earnScreen(){
+  switch(S.step){
+    case 0: return earnSelect();
+    case 1: return earnConfigure();
+    case 2: return earnExecute();
+    case 3: return earnDashboard();
+  }
+}
+function earnSelect(){
+  const list=VAULTS.map((v,i)=>`
+    <div class="opt" onclick="pick(${i})">
+      <div class="opt-top">
+        <div class="opt-id">${tokBadge(v.asset)}<div><div class="opt-name">${v.name}</div>
+          <div class="opt-meta"><span class="chiptag">${v.chain}</span></div></div></div>
+        <div class="opt-apy"><div class="v">${apyHover(v,true)}</div><div class="l">variable</div></div>
+      </div>
+      <div class="opt-stats">
+        <div class="s"><div class="l">Total deposits</div><div class="v">$${v.tvl}M</div></div>
+        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(v.liq)}</div></div>
+      </div>
+    </div>`).join('');
+  return `<div style="max-width:720px">
+    <div class="panel">
+      <div class="titlerow"><h4>Earn</h4>${poweredBy()}</div>
+      <div class="desc">Earn returns on your assets with no lock-up.</div>
+      ${list}
+      ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
+        `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}
+    </div>
+  </div>`;
+}
+
+/* Deposit page (vault page) — terms + amount + live preview in one */
+function earnConfigure(){
+  S.txDone=false;
+  const v=VAULTS[S.sel]; const bal=25000; const amt=S.form.amt||0; const shares=amt/1.0842;
+  return `<div class="grid">
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:2px">${tokBadge(v.asset,false)}<div><h4 style="margin:0">Earn with ${v.name}</h4><div class="tag muted tiny">Morpho Vault · ${v.chain}</div></div></div>
+
+      <div class="vstats">
+        <div class="vstat"><div class="l">Net APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
+        <div class="vstat"><div class="l">Exposure</div><div class="v">${collateralAvatars(v)}</div></div>
+        <div class="vstat"><div class="l">Total deposits</div><div class="v">$${v.tvl}M</div></div>
+        <div class="vstat"><div class="l">Liquidity</div><div class="v" style="${v.liq<0.05?'color:var(--amber)':''}">${fmtLiq(v.liq)}</div></div>
+      </div>
+
+      <div class="showmore">
+        <span class="ln"></span>
+        <button class="${S.showAdv?'open':''}" onclick="toggleAdv()">${S.showAdv?'Show less':'Show more'} <span class="cx">▾</span></button>
+        <span class="ln"></span>
+      </div>
+      ${S.showAdv?`<div class="rows adv fade-in">
+        ${R('Curator', curatorBadge(v.curator)+v.curator)}
+        ${R('Vault address', `<a class="extlink mono" href="${EXPLORER+v.addr}" target="_blank" rel="noopener noreferrer">${shortAddr(v.addr)} ↗</a>`)}
+        ${R('Deployment date', v.deployed)}
+      </div>`:''}
+
+      ${v.warn?`<div class="warnrow" style="margin-top:12px">⚠ ${v.warn}</div>`:''}
+      ${bp('Read vault + preview','Read live share price and APY; convert the entered amount to shares with previewDeposit, which returns exactly what the deposit will mint.',
+        `<span class="kw">const</span> s = <span class="kw">await</span> vault.<span class="fn">getState</span>();\n<span class="kw">const</span> shares = <span class="kw">await</span> vault.<span class="fn">previewDeposit</span>(assets);`)}
+    </div>
+    <div class="panel">
+      <div class="field" style="margin-bottom:12px">
+        <label>Deposit<span class="bal">Balance: <b>${money(bal,0)} ${v.asset}</b></span></label>
+        <div class="inp">
+          <input id="amtIn" type="text" inputmode="decimal" placeholder="0.00" value="${amt||''}" oninput="earnAmt(this.value)">
+          <button class="assetbtn">${tokBadge(v.asset,true)} ${v.asset}</button>
+          <button class="maxbtn" onclick="earnAmt(${bal})">MAX</button>
+        </div>
+        ${usdSub('amtIn',v.asset,amt)}
+      </div>
+      <div class="rows">
+        ${R('Position value', amt?usd(amt):'—')}
+        ${R('Net APY (variable)', pct(v.netApy),'pos')}
+        ${R('Est. yield / yr', amt?'+'+usd(amt*v.netApy/100):'—','pos')}
+      </div>
+      <div class="divline"></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${!amt?'disabled':''} onclick="next()">Review deposit</button></div>
+      <div class="pbm-foot">${poweredBy()}</div>
+    </div>
+  </div>`;
+}
+function earnAmt(v){ S.form.amt=parseFloat((''+v).replace(/,/g,''))||0; render(); const el=document.getElementById('amtIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);} }
+
+function earnExecute(){
+  const v=VAULTS[S.sel]; const amt=S.form.amt;
+  if(S.txDone){
+    const p=S.position;
+    return `<div class="panel" style="max-width:520px;margin:0 auto">
+      <div class="confirm-hero"><div class="ok">✓</div><h3>Deposit confirmed</h3>
+        <p>${money(p.deposited,2)} ${v.asset} supplied to ${v.name}.</p>
+        <div class="txhash mono">0x7a3e…b91f · confirmed</div></div>
+      <div class="rows">
+        ${R('Position value', usd(p.deposited))}
+        ${R('Net APY (variable)', pct(v.netApy),'pos')}
+      </div>
+      <div class="spacer"></div><button class="btn" onclick="next()">Open dashboard</button>
+    </div>`;
+  }
+  return `<div class="panel" style="max-width:520px;margin:0 auto">
+    <h4>Confirm deposit</h4>
+    <div class="bundle" id="bundle">
+      <div class="bundle-head"><div class="t">Transaction</div></div>
+      <div class="bstep" data-b="0"><span class="bnum">1</span><div class="bt"><b>Deposit ${money(amt,0)} ${tokInline(v.asset)}</b></div><span class="state"></span></div>
+    </div>
+    <div class="rows">
+      ${R('Net APY (variable)', pct(v.netApy),'pos')}
+      ${R('Est. yield / yr', '+'+usd(amt*v.netApy/100),'pos')}
+    </div>
+    ${legalFooter()}
+    <div class="spacer"></div>
+    <button class="btn" id="signBtn" onclick="earnSign()">Sign & deposit</button>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
+    ${bp('Bundle approve + deposit','Permit2 collapses the ERC-20 approval and ERC-4626 deposit into one signed multicall.',
+      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
+  </div>`;
+}
+function earnSign(){
+  const btn=document.getElementById('signBtn'); btn.disabled=true; btn.innerHTML='Awaiting signature…';
+  runBundle(()=>{
+    const v=VAULTS[S.sel]; const amt=S.form.amt;
+    S.position={ vault:v, deposited:amt, shares:amt/1.0842, sharePrice:1.0842, day:0, claimable:0 };
+    S.txDone=true; toast('Deposit confirmed'); render();
+  });
+}
+function runBundle(done){
+  const steps=[...document.querySelectorAll('#bundle .bstep')]; let i=0;
+  const tick=()=>{
+    if(i>0){ steps[i-1].classList.remove('active'); steps[i-1].classList.add('done'); steps[i-1].querySelector('.state').innerHTML='<span class="chk">✓</span>'; }
+    if(i<steps.length){ steps[i].classList.add('active'); steps[i].querySelector('.state').innerHTML='<span class="spin"></span>'; i++; setTimeout(tick,850); }
+    else{ setTimeout(done,450); }
+  };
+  tick();
+}
+
+/* accrued yield: demo — simulate elapsed time so the number is illustrative */
+function earnAccrued(p){ const elapsed=p.elapsedDays||11; return p.deposited*p.vault.netApy/100*(elapsed/365); }
+function earnDashboard(){
+  if(S.detail) return earnDetail();
+  const p=S.position; const v=p.vault;
+  const accrued=earnAccrued(p);
+  const value=p.deposited+accrued;
+  return `<div class="fade-in">
+    <div class="dash-head">
+      <div><div class="dash-title">Your positions</div></div>
+    </div>
+    <div class="poslist">
+      <div class="posrow ${vaultAvail(v)<value?'warn':''}" onclick="openDetail()">
+        <div class="id">${tokBadge(v.asset)}<div><div class="pn">${v.name}</div><div class="ps">Earn</div></div></div>
+        <div class="cells">
+          <div class="cell"><div class="l">Position value</div><div class="v">${usd(value)}</div></div>
+          <div class="cell"><div class="l">APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
+          <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued)}</div></div>
+          ${vaultAvail(v)<value?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v))} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
+        </div>
+        <div class="acts" onclick="event.stopPropagation()">
+          <button class="btn sm" onclick="openTopup()">Deposit</button>
+          <button class="btn ghost sm" onclick="openWithdraw()">Withdraw</button>
+        </div>
+        <span class="chev-r">›</span>
+      </div>
+    </div>
+  </div>`;
+}
+/* shared by all three dashboards: row → detail view */
+function openDetail(){ S.detail=true; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function closeDetail(){ S.detail=false; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function earnDetail(){
+  const p=S.position; const v=p.vault;
+  const accrued=earnAccrued(p);
+  const value=p.deposited+accrued;
+  const avail=vaultAvail(v);
+  const capped=avail<value;   // the vault cannot pay out the full position right now
+  return `<div class="fade-in">
+    <div class="flow-head" style="margin-bottom:16px">
+      <button class="back" onclick="closeDetail()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Positions</button>
+      <div class="flow-title">${tokBadge(v.asset)}<div><h2 style="font-size:16px">${v.name} vault</h2><div class="tag">${v.chain} · ${v.curator}</div></div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="rows">
+          ${Rbig('Position value', usd(value),'')}
+          ${R('Net APY (variable)', apyHover(v),'pos')}
+          ${R('Accrued yield', '+'+usd(accrued),'pos')}
+          ${R('Est. yield / yr', '+'+usd(value*v.netApy/100),'pos')}
+          ${R('Cost basis', usd(p.deposited))}
+          ${R('Withdrawable now '+(capped?tip(VAULT_LIQ_TIP):''), usd(Math.min(value,avail)), capped?'warn':'')}
+        </div>
+        ${capped?`<div class="warnrow" style="margin-top:14px;align-items:flex-start">⚠ <span><b>Only ${usd(avail)} of your ${usd(value)} can be withdrawn right now.</b> Most of this vault is lent out to borrowers. The rest becomes available as they repay, or when an allocator pulls liquidity back from its markets.</span></div>`:''}
+        <div class="divline"></div>
+        <div class="btn-row">
+          <button class="btn" onclick="openTopup()">Deposit</button>
+          <button class="btn ghost" onclick="openWithdraw()">Withdraw</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="section-label">Rewards</div>
+        <div class="rows">${R('Claimable', usd(rewardsClaimable()),'pos')}${R('Source','Merkl')}</div>
+        <div class="spacer"></div>
+        <button class="btn ghost sm" onclick="openRewards()">Claim rewards</button>
+        ${bp('Monitor position','Poll share price × share balance for live value. Rewards accrue off-chain (Merkl) and are claimed separately.',
+          `<span class="kw">const</span> value = <span class="kw">await</span> vault.<span class="fn">convertToAssets</span>(<span class="kw">await</span> vault.<span class="fn">balanceOf</span>(user));`)}
+      </div>
+    </div>
+  </div>`;
+}
+function rewardsClaimable(){ const p=S.position; return p.deposited*p.vault.rewards/100*0.15; }
+
+/* Earn manage modals — same recap structure, with previous → new simulation */
+function earnSim(deposit=0, withdraw=0){
+  const p=S.position, v=p.vault;
+  const accrued=earnAccrued(p);
+  const value=p.deposited+accrued;
+  const nv=Math.max(0, value + deposit - withdraw);
+  const nDeposited=Math.max(0, p.deposited + deposit - withdraw);
+  return {value, nv, nDeposited, accrued, apy:v.netApy};
+}
+function earnSimRows(sim){
+  const p=S.position, v=p.vault;
+  return `
+    ${Rd('Position value', usd(sim.value), sim.nv<=0.005?'0':usd(sim.nv))}
+    ${R('Net APY (variable)', pct(v.netApy),'pos')}
+    ${Rd('Est. yield / yr', '+'+usd(sim.value*v.netApy/100), sim.nv<=0.005?'$0':'+'+usd(sim.nv*v.netApy/100),'pos')}
+    ${vaultAvail(v)<sim.value?R('Withdrawable now '+tip(VAULT_LIQ_TIP), usd(vaultAvail(v)),'warn'):''}`;
+}
+function earnMaxWithdraw(){
+  const p=S.position; return Math.min(p.deposited+earnAccrued(p), vaultAvail(p.vault));
+}
+function openWithdraw(){
+  const p=S.position; const v=p.vault; const value=p.deposited+earnAccrued(p);
+  const avail=earnMaxWithdraw();
+  modal('Withdraw', `
+    <div class="field">
+      <label>Withdraw<span class="bal">${avail<value?`Available: <b>${money(avail,2)} ${v.asset}</b> `+tip(VAULT_LIQ_TIP):`Position: <b>${money(value,2)} ${v.asset}</b>`}</span></label>
+      <div class="inp">
+        <input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="earnWPrev()">
+        <button class="assetbtn">${tokBadge(v.asset,true)} ${v.asset}</button>
+        <button class="maxbtn" onclick="setVal('wIn','${avail.toFixed(2)}')">MAX</button>
+      </div>
+      ${usdSub('wIn',v.asset)}
+    </div>
+    <div id="simWarn"></div>
+    <div class="rows" id="simRows">${earnSimRows(earnSim())}</div>
+    <div id="simWarn"></div>
+    ${bp('Withdraw','Exact-amount exit calls withdraw(assets); full exit calls redeem(shares) off the share balance to avoid leaving dust. The end user only ever sees "amount" and "Max".',
+      `<span class="cm">// partial</span> vault.<span class="fn">withdraw</span>(assets, receiver, owner)\n<span class="cm">// full (Max)</span> vault.<span class="fn">redeem</span>(shares, receiver, owner)`)}
+    <div class="spacer"></div>
+    <button class="btn" id="simBtn" onclick="doWithdraw()">Confirm</button>`);
+  earnWPrev();
+}
+function earnWPrev(){
+  const p=S.position; const v=p.vault; const value=p.deposited+earnAccrued(p);
+  updUsd('wIn',v.asset);
+  const typed=val('wIn');
+  const avail=earnMaxWithdraw();
+  const wd=Math.min(typed,value);
+  const sim=earnSim(0,wd);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=earnSimRows(sim);
+  const over=typed>avail+0.005;
+  const wEl=document.getElementById('simWarn');
+  if(wEl) wEl.innerHTML = over?`<div class="warnrow" style="margin-top:12px">⚠ Only ${money(avail,2)} ${v.asset} can be withdrawn right now</div>`:'';
+  const btn=document.getElementById('simBtn');
+  if(btn){ btn.disabled=wd<=0||over; btn.textContent = wd<=0?'Enter an amount':(over?'Exceeds available':(wd>=value-0.005?'Withdraw everything':'Withdraw')); }
+}
+function doWithdraw(){
+  const p=S.position; const value=p.deposited+earnAccrued(p);
+  const wd=Math.min(val('wIn'),value);
+  if(wd<=0 || val('wIn')>earnMaxWithdraw()+0.005) return;
+  if(wd>=value-0.005){ p.shares=0; p.deposited=0; toast('Withdrew '+usd(wd)+' · position closed'); }
+  else { p.shares-=wd/p.sharePrice; p.deposited=Math.max(0,p.deposited-wd); toast('Withdrew '+usd(wd)); }
+  closeModal();
+  if(p.deposited<=0.005){ if(S.product==='dash'){ dashRemove(); return; } S.position=null; go('flow','earn'); }
+  else render();
+}
+function openTopup(){
+  const p=S.position; const v=p.vault; const bal=25000;
+  modal('Deposit', `
+    <div class="field"><label>Deposit<span class="bal">Balance: <b>${money(bal,0)} ${v.asset}</b></span></label>
+      <div class="inp"><input id="tIn" type="text" inputmode="decimal" placeholder="0.00" oninput="earnTPrev()"><button class="assetbtn">${tokBadge(v.asset,true)} ${v.asset}</button><button class="maxbtn" onclick="setVal('tIn','${bal}')">MAX</button></div>${usdSub('tIn',v.asset)}</div>
+    <div class="rows" id="simRows">${earnSimRows(earnSim())}</div>
+    ${bp('Deposit','Same bundled path as the initial supply: the Permit2 approval and the ERC-4626 deposit are collapsed into one signed multicall.',
+      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
+    <div class="spacer"></div><button class="btn" id="simBtn" onclick="doTopup()">Confirm</button>`);
+  earnTPrev();
+}
+function earnTPrev(){
+  updUsd('tIn',S.position.vault.asset);
+  const dep=val('tIn');
+  const sim=earnSim(dep,0);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=earnSimRows(sim);
+  const btn=document.getElementById('simBtn');
+  if(btn){ btn.disabled=dep<=0; btn.textContent = dep<=0?'Enter an amount':'Deposit'; }
+}
+function doTopup(){ const p=S.position; const amt=val('tIn'); if(amt<=0) return; p.deposited+=amt; p.shares+=amt/p.sharePrice; toast('Deposited '+usd(amt)); closeModal(); render(); }
+function openRewards(){
+  const c=rewardsClaimable();
+  modal('Claim rewards', `
+    <div class="rows">${R('Claimable', usd(c),'pos')}${R('Source','Merkl distribution')}${R('Token','MORPHO + partner')}</div>
+    <div class="hint">💡 Rewards live outside the vault. Discover the claim, build the Merkl tx, confirm receipt — a flow independent of deposit/withdraw.</div>
+    ${bp('Claim rewards','Rewards accrue off-chain and are claimed against a Merkl distributor with a Merkle proof.',
+      `<span class="kw">const</span> claims = <span class="kw">await</span> merkl.<span class="fn">getClaims</span>(user);\n<span class="kw">await</span> distributor.<span class="fn">claim</span>(tokens, amounts, proofs);`)}
+    <div class="spacer"></div><button class="btn" onclick="doClaim(${c})">Claim ${usd(c)}</button>`);
+}
+function doClaim(c){ toast('Claimed '+usd(c)+' in rewards'); closeModal(); }
+
+/* =====================================================================
+   VARIABLE-RATE BORROW (Morpho Blue)
+   ===================================================================== */
+function variableScreen(){
+  switch(S.step){
+    case 0: return varSelect();
+    case 1: return varConfigure();
+    case 2: return varExecute();
+    case 3: return varDashboard();
+  }
+}
+function varSelect(){
+  const list=MARKETS_V.map((m,i)=>`
+    <div class="opt" onclick="pick(${i})">
+      <div class="opt-top">
+        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
+          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
+        <div class="opt-apy"><div class="v" style="color:var(--accent2)">${pct(m.apy)} APY</div><div class="l">variable</div></div>
+      </div>
+      <div class="opt-stats">
+        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(mLiq(m))}</div></div>
+        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,1)}</div></div>
+      </div>
+    </div>`).join('');
+  return `<div style="max-width:720px">
+    <div class="panel">
+      <div class="titlerow"><h4>Variable-rate borrow</h4>${poweredBy()}</div>
+      <div class="desc">Borrow against your collateral at a rate that moves with the market.</div>
+      ${list}
+      ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
+        `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}
+    </div>
+  </div>`;
+}
+function selMkt(i){ S.sel=i; render(); }
+
+/* Loan tokens a market can currently lend out. Market liquidity is quoted in USD. */
+function marketLiquidity(m){ return (mLiq(m)*1e6)/(PRICE_USD[m.loan]||1); }
+
+function varMath(){
+  const m=MARKETS_V[S.sel];
+  const col=S.form.col||0;
+  const borrow=S.form.borrow||0;          // amount the user receives
+  const feeAmt=borrow*m.origFee/100;      // origination fee is ADDED to the debt
+  const debt=borrow+feeAmt;               // what actually accrues interest
+  const colValue=col*cPrice(m);
+  const maxDebt=colValue*m.lltv/100;
+  // a borrow is bounded by BOTH the collateral posted and the loan assets the market can supply
+  const maxByCollateral=maxDebt/(1+m.origFee/100);
+  const maxByLiquidity=marketLiquidity(m);
+  const maxBorrow=Math.min(maxByCollateral,maxByLiquidity);
+  const liqCapped=maxByLiquidity<maxByCollateral;
+  const overLiquidity=borrow>maxByLiquidity;
+  const ltv= colValue>0 ? (debt/colValue)*100 : 0;
+  const liqPrice= col>0 ? debt/(col*m.lltv/100) : 0;
+  const hf= debt>0 ? maxDebt/debt : Infinity;
+  return {m,col,borrow,feeAmt,debt,colValue,ltv,maxDebt,maxByCollateral,maxByLiquidity,maxBorrow,liqCapped,overLiquidity,liqPrice,hf};
+}
+/* Borrow page (market page) — risk header + amounts + live health */
+function varConfigure(){
+  S.txDone=false;
+  const m=MARKETS_V[S.sel]; const colBal=m.col==='cbBTC'?2.5:(m.col==='wstETH'?40:(m.col==='ezETH'?300:30));
+  const d=varMath();
+  return `<div class="grid">
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${pairBadge(m.col,m.loan)}<div><h4 style="margin:0">${m.col} / ${m.loan}</h4><div class="tag muted tiny">${m.chain} · <a class="extlink" href="${m.oracleUrl}" target="_blank" rel="noopener noreferrer">${m.oracle} ↗</a> · LLTV ${pct(m.lltv,0)}</div></div></div>
+      <div class="field">
+        <label>Collateral<span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
+        <div class="inp"><input id="colIn" type="text" inputmode="decimal" value="${d.col||''}" placeholder="0.00" oninput="varSet('col',this.value)"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="varSet('col',${colBal})">MAX</button></div>
+        ${usdSub('colIn',m.col,d.col)}
+      </div>
+      <div class="field" style="margin-bottom:6px">
+        <label>Borrow<span class="bal">Max: <b>${money(Math.floor(d.maxBorrow),0)} ${m.loan}</b>${d.liqCapped?' '+tip(LIQ_TIP):''}</span></label>
+        <div class="inp"><input id="borIn" type="text" inputmode="decimal" value="${d.borrow||''}" placeholder="0.00" oninput="varSet('borrow',this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="varSet('borrow',${Math.floor(d.maxBorrow)})">MAX</button>`:''}</div>
+        ${usdSub('borIn',m.loan,d.borrow)}
+      </div>
+      ${bp('Live risk math','Recompute LTV / health / liquidation price on every keystroke — pure math on market params, no tx. A borrow is bounded by the collateral posted and by the loan assets the market can still supply; take the lower of the two.',
+        `maxBorrow = min(\n  collateralValue * lltv,      <span class="cm">// LLTV bound</span>\n  market.totalSupply - market.totalBorrow  <span class="cm">// liquidity bound</span>\n)`)}
+    </div>
+    <div class="panel">
+      ${healthBar(d.hf)}
+      <div class="rows" style="margin-top:14px">
+        ${R('Borrow APY (variable)', pct(m.apy))}
+        ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), d.feeAmt?'+'+money(d.feeAmt,2)+' '+m.loan:'—')}
+        ${R('Total debt', d.debt?money(d.debt,2)+' '+m.loan:'—')}
+        ${R('LTV', d.borrow?pct(d.ltv,1)+' / '+pct(m.lltv,0):'—', liqCls(d.ltv,m.lltv))}
+        ${R('Liquidation price', d.liqPrice?usd(d.liqPrice)+' per '+m.col:'—',liqCls(d.ltv,m.lltv))}
+      </div>
+      ${d.ltv>m.lltv?`<div class="warnrow" style="margin-top:12px">⚠ Exceeds LLTV — reduce borrow or add collateral</div>`:''}
+      ${d.overLiquidity?`<div class="warnrow" style="margin-top:12px">⚠ Only ${money(Math.floor(d.maxByLiquidity),0)} ${m.loan} is available to borrow in this market right now</div>`:''}
+      <div class="divline"></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${(!d.col||!d.borrow||d.ltv>m.lltv||d.overLiquidity)?'disabled':''} onclick="next()">Review borrow</button></div>
+      <div class="pbm-foot">${poweredBy()}</div>
+    </div>
+  </div>`;
+}
+function varSet(k,v){ S.form[k]=parseFloat((''+v).replace(/,/g,''))||0; render(); const id=k==='col'?'colIn':'borIn'; const el=document.getElementById(id); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);} }
+
+function varExecute(){
+  const d=varMath(); const m=d.m;
+  if(S.txDone){
+    const p=S.position; const colValue=p.col*cPrice(m); const ltv=p.debt/colValue*100;
+    const liqPrice=p.debt/(p.col*m.lltv/100);
+    return `<div class="panel" style="max-width:520px;margin:0 auto">
+      <div class="confirm-hero"><div class="ok">✓</div><h3>Borrow confirmed</h3>
+        <p>${money(p.received,2)} ${m.loan} borrowed against ${money(p.col,3)} ${m.col}.</p>
+        <div class="txhash mono">0x3d9c…a70e · confirmed</div></div>
+      <div class="rows">
+        ${R('Received', money(p.received,2)+' '+m.loan)}
+        ${R('Collateral locked', money(p.col,3)+' '+m.col)}
+        ${R('Borrow APY (variable)', pct(m.apy))}
+        ${R('Total debt', money(p.debt,2)+' '+m.loan)}
+        ${R('LTV', pct(ltv,1)+' / '+pct(m.lltv,0), liqCls(ltv,m.lltv))}
+        ${R('Liquidation price', usd(liqPrice)+' per '+m.col,liqCls(ltv,m.lltv))}
+      </div>
+      <div class="spacer"></div><button class="btn" onclick="next()">Open dashboard</button>
+    </div>`;
+  }
+  return `<div class="panel" style="max-width:520px;margin:0 auto">
+    <h4>Confirm borrow</h4>
+    <div class="bundle" id="bundle">
+      <div class="bundle-head"><div class="t">Transaction</div></div>
+      <div class="bstep" data-b="0"><span class="bnum">1</span><div class="bt"><b>Lock ${money(d.col,3)} ${tokInline(m.col)}</b></div><span class="state"></span></div>
+      <div class="bstep" data-b="1"><span class="bnum">2</span><div class="bt"><b>Borrow ${money(d.borrow,0)} ${tokInline(m.loan)}</b></div><span class="state"></span></div>
+    </div>
+    <div class="rows">
+      ${R('Borrow APY (variable)', pct(m.apy))}
+      ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), '+'+money(d.feeAmt,2)+' '+m.loan)}
+      ${R('Total debt', money(d.debt,2)+' '+m.loan)}
+      ${R('LTV', pct(d.ltv,1)+' / '+pct(m.lltv,0), liqCls(d.ltv,m.lltv))}
+      ${R('Liquidation price', usd(d.liqPrice)+' per '+m.col,liqCls(d.ltv,m.lltv))}
+    </div>
+    <div class="warnrow" style="margin-top:14px;align-items:flex-start">⚠ <span>Interest accrues continuously. The rate varies with market conditions, so your debt grows over time.</span></div>
+    ${legalFooter()}
+    <div class="spacer"></div>
+    <button class="btn" id="signBtn" onclick="varSign()">Sign & borrow</button>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
+    ${bp('Bundle supply + borrow','The bundler chains the hidden collateral permit, supplyCollateral and borrow so all land atomically in one signed tx.',
+      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
+  </div>`;
+}
+function varSign(){
+  const btn=document.getElementById('signBtn'); btn.disabled=true; btn.innerHTML='Awaiting signature…';
+  runBundle(()=>{
+    const d=varMath();
+    // debt is fee-inclusive; received is what hit the wallet
+    S.position={ type:'variable', m:d.m, col:d.col, debt:d.debt, received:d.borrow, apy:d.m.apy, day:0 };
+    S.txDone=true; toast('Borrow confirmed'); render();
+  });
+}
+function varMetrics(){
+  const p=S.position; const m=p.m;
+  const colValue=p.col*cPrice(m);
+  const ltv=(p.debt/colValue)*100;
+  const maxDebt=colValue*m.lltv/100;
+  const liqPrice=p.debt/(p.col*m.lltv/100);
+  const hf=maxDebt/p.debt;
+  return {p,m,colValue,ltv,maxDebt,liqPrice,hf};
+}
+function varDashboard(){
+  if(S.detail) return varDetail();
+  const {p,m,ltv,hf}=varMetrics();
+  return `<div class="fade-in">
+    <div class="dash-head">
+      <div><div class="dash-title">Your positions</div><div class="dash-sub">Morpho Blue · ${m.chain}</div></div>
+    </div>
+    <div class="poslist">
+      <div class="posrow ${ltvRisk(ltv,m.lltv)?'risk':''}" onclick="openDetail()">
+        <div class="id">${pairBadge(m.col,m.loan)}<div><div class="pn">${m.col} / ${m.loan}</div><div class="ps">Borrow · variable</div></div></div>
+        <div class="cells">
+          <div class="cell"><div class="l">Debt</div><div class="v">${money(p.debt,0)} <small>${m.loan}</small></div></div>
+          <div class="cell"><div class="l">Collateral</div><div class="v">${money(p.col,3)} <small>${m.col}</small></div></div>
+          <div class="cell"><div class="l">APY · variable</div><div class="v">${pct(m.apy)}</div></div>
+          <div class="cell"><div class="l">LTV</div><div class="v ${ltvRisk(ltv,m.lltv)?'red':''}">${pct(ltv,1)} ${healthBadge(hf)}</div></div>
+        </div>
+        <div class="acts" onclick="event.stopPropagation()">
+          <button class="btn sm" onclick="openRepay()">Repay</button>
+          <button class="btn ghost sm" onclick="openAddCol()">Add collateral</button>
+        </div>
+        <span class="chev-r">›</span>
+      </div>
+    </div>
+  </div>`;
+}
+function varDetail(){
+  const {p,m,colValue,ltv,maxDebt,liqPrice,hf}=varMetrics();
+  return `<div class="fade-in">
+    <div class="flow-head" style="margin-bottom:16px">
+      <button class="back" onclick="closeDetail()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Positions</button>
+      <div class="flow-title">${pairBadge(m.col,m.loan)}<div><h2 style="font-size:16px">${m.col} / ${m.loan}</h2><div class="tag">Morpho Blue · ${m.chain} · variable rate</div></div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        ${healthBar(hf)}
+        <div class="rows" style="margin-top:14px">
+          ${Rbig('Debt', money(p.debt,2)+' '+m.loan)}
+          ${R('Collateral', money(p.col,3)+' '+m.col+' · '+usd(colValue))}
+          ${R('Borrow APY (variable)', pct(m.apy))}
+          ${R('LTV', pct(ltv,1)+' / '+pct(m.lltv,0), liqCls(ltv,m.lltv))}
+          ${R('Liquidation price', usd(liqPrice)+' per '+m.col,liqCls(ltv,m.lltv))}
+          ${R('Borrow capacity left', usd(Math.min(Math.max(0,maxDebt-p.debt), varRemainingLiquidity(p)*(PRICE_USD[m.loan]||1))))}
+        </div>
+        <div class="divline"></div>
+        <div class="btn-row">
+          <button class="btn" onclick="openRepay()">Repay</button>
+          <button class="btn ghost" onclick="openAddCol()">Add collateral</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="section-label">Close position</div>
+        <div class="manage-actions" style="grid-template-columns:1fr">
+          <div class="maction" onclick="closeVarPosition()"><div class="mt"><span class="mi">✓</span> Repay all & withdraw</div><div class="md">Clears the debt and returns every ${m.col}</div></div>
+        </div>
+        ${bp('Monitor & manage','Health, LTV and liquidation price are recomputed on every poll. Full repay reads borrowShares and repays by shares to avoid leaving dust debt.',
+          `<span class="kw">const</span> pos = <span class="kw">await</span> <span class="fn">getPosition</span>(marketId, user);\npos.<span class="fn">borrowShares</span>, pos.collateral\n<span class="cm">// full repay:</span> <span class="fn">repay</span>({ shares: pos.borrowShares })`)}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* variable manage modals */
+/* --- variable: simulate the resulting position for any combination of inputs --- */
+const SAFETY = 1.05; // buffer kept above liquidation when withdrawing collateral
+function varSim(repay=0, withdraw=0, add=0, borrow=0){
+  const p=S.position, m=p.m;
+  const feeAmt = borrow*m.origFee/100;
+  const nd = Math.max(0, p.debt - repay + borrow + feeAmt);
+  const nc = Math.max(0, p.col + add - withdraw);
+  const cv = nc*cPrice(m);
+  const maxDebt = cv*m.lltv/100;
+  const ltv = cv>0 ? nd/cv*100 : 0;
+  const hf  = nd>0 ? (cv>0?maxDebt/nd:0) : Infinity;
+  const liq = (nc>0 && nd>0) ? nd/(nc*m.lltv/100) : 0;
+  return {nd,nc,cv,maxDebt,ltv,hf,liq,feeAmt};
+}
+function varMaxWithdraw(repay=0){
+  const p=S.position, m=p.m;
+  const nd=Math.max(0,p.debt-repay);
+  if(nd<=0) return p.col;
+  const need=(nd/(m.lltv/100))/cPrice(m)*SAFETY;
+  return Math.max(0,p.col-need);
+}
+/* what the market can still lend, net of what this position already drew */
+function varRemainingLiquidity(p){ return Math.max(0, marketLiquidity(p.m) - (p.received||0)); }
+function varMaxBorrow(add=0){
+  const p=S.position, m=p.m;
+  const cv=(p.col+add)*cPrice(m);
+  // keep the same safety buffer varSimWarn enforces, so MAX never rejects itself
+  const room=Math.max(0, cv*m.lltv/100/SAFETY - p.debt);
+  // bounded by collateral AND by remaining market liquidity
+  return Math.min(room/(1+m.origFee/100), varRemainingLiquidity(p));
+}
+/* shared simulation rows: previous → new */
+function varSimRows(sim, opts={}){
+  const p=S.position, m=p.m, cur=varMetrics();
+  const dust = sim.nd<=0.005;
+  return `
+    ${Rd('Debt', money(p.debt,2)+' '+m.loan, dust?'0':money(sim.nd,2)+' '+m.loan)}
+    ${Rd('Collateral', money(p.col,3)+' '+m.col, sim.nc<=0.00005?'0':money(sim.nc,3)+' '+m.col)}
+    ${R('Borrow APY (variable)', pct(m.apy))}
+    ${opts.feeAmt?R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), '+'+money(opts.feeAmt,2)+' '+m.loan):''}
+    ${Rd('LTV', pct(cur.ltv,1), dust||sim.nc<=0?'—':pct(sim.ltv,1)+' / '+pct(m.lltv,0), (dust||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}
+    ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (dust||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (dust||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
+}
+function varSimWarn(sim){
+  const m=S.position.m;
+  if(sim.nd>0 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
+  if(sim.nd>0 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV — repay more or withdraw less.';
+  if(sim.nd>0 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  return null;
+}
+function applySim(sim, msg){
+  const p=S.position;
+  p.debt = sim.nd<=0.005?0:sim.nd;
+  p.col  = sim.nc<=0.00005?0:sim.nc;
+  toast(msg);
+  closeModal();
+  if(p.debt===0 && p.col===0){ if(S.product==='dash'){ dashRemove(); toast('Position closed'); return; } S.position=null; go('flow','variable'); toast('Position closed'); }
+  else render();
+}
+
+/* Repay & withdraw collateral — one modal, two inputs */
+function openRepay(){
+  const p=S.position, m=p.m;
+  modal('Repay & withdraw', `
+    <div class="field"><label>Repay<span class="bal">Debt: <b>${money(p.debt,2)} ${m.loan}</b></span></label>
+      <div class="inp"><input id="rIn" type="text" inputmode="decimal" placeholder="0.00" oninput="repayPrev()"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="setVal('rIn','${p.debt.toFixed(2)}')">MAX</button></div>${usdSub('rIn',m.loan)}</div>
+    <div class="field"><label>Withdraw collateral<span class="bal">Deposited: <b>${money(p.col,3)} ${m.col}</b></span></label>
+      <div class="inp"><input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="repayPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('wIn',varMaxWithdraw(val('rIn')).toFixed(4))">MAX</button></div>${usdSub('wIn',m.col)}</div>
+    <div class="rows" id="simRows">${varSimRows(varSim())}</div>
+    <div id="simWarn"></div>
+    ${bp('Repay + withdraw bundle','Bundled so debt reduction and collateral release land atomically. Repaying the full balance reads borrowShares and repays by shares, avoiding dust.',
+      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">repay</span>(market, assets <span class="cm">/* or shares if max */</span>, user),\n  <span class="fn">withdrawCollateral</span>(market, colAmt, user, user),\n]);`)}
+    <div class="spacer"></div><button class="btn" id="simBtn" onclick="doRepay()">Confirm</button>`);
+  repayPrev();
+}
+function repayPrev(){
+  const p=S.position, m=p.m;
+  updUsd('rIn',m.loan); updUsd('wIn',m.col);
+  const repay=Math.min(val('rIn'),p.debt), wd=Math.min(val('wIn'),p.col);
+  const sim=varSim(repay,wd,0,0);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=varSimRows(sim);
+  const warn=varSimWarn(sim), wEl=document.getElementById('simWarn'), btn=document.getElementById('simBtn');
+  if(wEl) wEl.innerHTML = warn?`<div class="warnrow" style="margin-top:12px">⚠ ${warn}</div>`:'';
+  if(btn){ const none=repay<=0&&wd<=0; btn.disabled=!!warn||none; btn.textContent = none?'Enter an amount':(repay>0&&wd>0?'Repay & withdraw':repay>0?'Repay':'Withdraw collateral'); }
+}
+function doRepay(){
+  const p=S.position;
+  const repay=Math.min(val('rIn'),p.debt), wd=Math.min(val('wIn'),p.col);
+  const sim=varSim(repay,wd,0,0);
+  if(varSimWarn(sim)||(repay<=0&&wd<=0)) return;
+  const parts=[]; if(repay>0)parts.push('repaid '+money(repay,2)+' '+p.m.loan); if(wd>0)parts.push('withdrew '+money(wd,3)+' '+p.m.col);
+  applySim(sim, parts.join(' · '));
+}
+
+/* close position = repay-all + withdraw-all, prefilled */
+function closeVarPosition(){
+  const p=S.position;
+  openRepay();
+  setVal('rIn',p.debt.toFixed(2));
+  setVal('wIn',p.col.toFixed(4));
+}
+
+/* Add collateral & borrow — one modal, two inputs */
+function openAddCol(){
+  const p=S.position, m=p.m; const bal=m.col==='cbBTC'?1.2:20;
+  modal('Add collateral & borrow', `
+    <div class="field"><label>Add collateral<span class="bal">Balance: <b>${money(bal,3)} ${m.col}</b></span></label>
+      <div class="inp"><input id="acIn" type="text" inputmode="decimal" placeholder="0.00" oninput="addColPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('acIn','${bal}')">MAX</button></div>${usdSub('acIn',m.col)}</div>
+    <div class="field"><label>Borrow more<span class="bal">Available: <b id="capLbl">${money(varMaxBorrow(0),0)} ${m.loan}</b></span></label>
+      <div class="inp"><input id="boIn" type="text" inputmode="decimal" placeholder="0.00" oninput="addColPrev()"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="setVal('boIn',Math.floor(varMaxBorrow(val('acIn'))))">MAX</button></div>${usdSub('boIn',m.loan)}</div>
+    <div class="rows" id="simRows">${varSimRows(varSim())}</div>
+    <div id="simWarn"></div>
+    <div class="hint">💡 Adding collateral alone improves your buffer — the rate and existing debt don't change.</div>
+    ${bp('Supply collateral + borrow','Bundled so both land atomically. Borrowing more re-checks health against the new collateral before the tx is sent.',
+      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
+    <div class="spacer"></div><button class="btn" id="simBtn" onclick="doAddCol()">Confirm</button>`);
+  addColPrev();
+}
+function varBorrowLiquidityWarn(borrow){
+  const p=S.position, m=p.m;
+  const left=varRemainingLiquidity(p);
+  return borrow>left+1e-6 ? `Only ${money(Math.floor(left),0)} ${m.loan} is available to borrow in this market right now` : null;
+}
+function addColPrev(){
+  const p=S.position, m=p.m;
+  updUsd('acIn',m.col); updUsd('boIn',m.loan);
+  const add=val('acIn'), borrow=val('boIn');
+  const sim=varSim(0,0,add,borrow);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=varSimRows(sim,{feeAmt:sim.feeAmt});
+  const cap=document.getElementById('capLbl'); if(cap) cap.textContent=money(Math.max(0,varMaxBorrow(add)),0)+' '+m.loan;
+  const warn=varBorrowLiquidityWarn(borrow)||varSimWarn(sim), wEl=document.getElementById('simWarn'), btn=document.getElementById('simBtn');
+  if(wEl) wEl.innerHTML = warn?`<div class="warnrow" style="margin-top:12px">⚠ ${warn}</div>`:'';
+  if(btn){ const none=add<=0&&borrow<=0; btn.disabled=!!warn||none; btn.textContent = none?'Enter an amount':(add>0&&borrow>0?'Add collateral & borrow':add>0?'Add collateral':'Borrow'); }
+}
+function doAddCol(){
+  const p=S.position;
+  const add=val('acIn'), borrow=val('boIn');
+  const sim=varSim(0,0,add,borrow);
+  if(varBorrowLiquidityWarn(borrow)||varSimWarn(sim)||(add<=0&&borrow<=0)) return;
+  if(borrow>0) p.received=(p.received||0)+borrow;
+  const parts=[]; if(add>0)parts.push('added '+money(add,3)+' '+p.m.col); if(borrow>0)parts.push('borrowed '+money(borrow,2)+' '+p.m.loan);
+  applySim(sim, parts.join(' · '));
+}
+
+/* =====================================================================
+   FIXED-RATE BORROW (Morpho Midnight)
+   ===================================================================== */
+function fixedScreen(){
+  switch(S.step){
+    case 0: return fxSelect();
+    case 1: return fxConfigure();
+    case 2: return fxExecute();
+    case 3: return fxDashboard();
+  }
+}
+function fxSelect(){
+  const list=MARKETS_F.map((m,i)=>`
+    <div class="opt" onclick="pick(${i})">
+      <div class="opt-top">
+        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
+          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
+        <div class="opt-apy"><div class="v" style="color:#a98bff">${pct(m.bestApy)} APY</div><div class="l">fixed · for $1,000 borrow</div></div>
+      </div>
+      <div class="opt-stats">
+        <div class="s"><div class="l">Maturity</div><div class="v">${m.maturity}</div></div>
+        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,0)}</div></div>
+        <div class="s"><div class="l">Book depth</div><div class="v">${usd(bidsOf(m).reduce((a,b)=>a+b[1],0))}</div></div>
+      </div>
+    </div>`).join('');
+  return `<div style="max-width:720px">
+    <div class="panel">
+      <div class="titlerow"><h4>Fixed-rate borrow</h4>${poweredBy()}</div>
+      <div class="desc">Lock your rate until a maturity date.</div>
+      ${list}
+      ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
+        `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}
+    </div>
+  </div>`;
+}
+/* fixed math: walk the bid book */
+function fxQuote(borrowUnits){
+  const m=MARKETS_F[S.sel]; let remaining=borrowUnits, proceeds=0, filled=0;
+  for(const [apy,depth] of bidsOf(m)){
+    if(remaining<=0)break;
+    const take=Math.min(remaining,depth);
+    const price=1/(1+apy/100*(m.days/365)); // price per unit
+    proceeds+=take*price; filled+=take; remaining-=take;
+  }
+  const fillable=filled; const blendedPrice=filled>0?proceeds/filled:0;
+  const blendedApy= blendedPrice>0 ? ((1/blendedPrice)-1)*(365/m.days)*100 : m.bestApy;
+  return {m, proceeds, filled:fillable, unfilled:Math.max(0,borrowUnits-fillable), blendedPrice, blendedApy};
+}
+function fxMath(){
+  const m=MARKETS_F[S.sel];
+  const debtUnits=S.form.units||0;        // principal debt units sold into the book
+  const col=S.form.col||0;
+  const q=fxQuote(debtUnits);
+  const received=q.proceeds;              // user receives the full proceeds now
+  const feeAmt=q.proceeds*m.origFee/100;  // origination fee is ADDED to the debt
+  const totalDebt=debtUnits+feeAmt;       // total repayable at maturity
+  const colValue=col*cPrice(m);
+  const maxDebt=colValue*m.lltv/100;
+  const ltv= colValue>0? totalDebt/colValue*100:0;
+  const liqPrice= col>0? totalDebt/(col*m.lltv/100):0;
+  const hf= totalDebt>0? (colValue*m.lltv/100)/totalDebt:Infinity;
+  return {...q, m, debtUnits, col, feeAmt, received, totalDebt, colValue, maxDebt, ltv, liqPrice, hf};
+}
+/* Most loan token receivable now, given a collateral amount.
+   Inverts: debtUnits + originationFee <= collateralValue * LLTV, then prices units off the book.
+   Also capped by available bid depth. */
+function fxMaxBorrowForCol(col){
+  const m=MARKETS_F[S.sel];
+  if(!col||col<=0) return 0;
+  const price=1/(1+m.bestApy/100*(m.days/365));      // proceeds per debt unit
+  const maxDebt=col*cPrice(m)*m.lltv/100;              // max units owed at maturity
+  const depth=bidsOf(m).reduce((a,b)=>a+b[1],0);
+  const units=Math.min(maxDebt/(1+price*m.origFee/100), depth);
+  return units*price;                                 // receivable today
+}
+
+/* Borrow page (market page) — terms + amounts + live risk in one */
+function fxConfigure(){
+  S.txDone=false;
+  const d=fxMath(); const m=d.m; const colBal=m.col==='cbBTC'?2.5:40;
+  const maxRecv=Math.floor(fxMaxBorrowForCol(d.col));
+  return `<div class="grid">
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${pairBadge(m.col,m.loan)}<div><h4 style="margin:0">${m.col} / ${m.loan}</h4><div class="tag muted tiny">Matures ${m.maturity} (${m.days} days) · <a class="extlink" href="${m.oracleUrl}" target="_blank" rel="noopener noreferrer">${m.oracle} ↗</a> · LLTV ${pct(m.lltv,0)}</div></div></div>
+      <div class="field">
+        <label>Collateral<span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
+        <div class="inp"><input id="fcIn" type="text" inputmode="decimal" value="${d.col||''}" placeholder="0.00" oninput="fxCol(this.value)"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="fxCol(${colBal})">MAX</button></div>
+        ${usdSub('fcIn',m.col,d.col)}
+      </div>
+      <div class="field" style="margin-bottom:6px">
+        <label>Borrow${d.col?`<span class="bal">Max: <b>${money(maxRecv,0)} ${m.loan}</b></span>`:''}</label>
+        <div class="inp"><input id="fbIn" type="text" inputmode="decimal" value="${S.form.reqBorrow||''}" placeholder="0.00" oninput="fxBorrow(this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="fxBorrow(${maxRecv})">MAX</button>`:''}</div>
+        ${usdSub('fbIn',m.loan,S.form.reqBorrow||0)}
+      </div>
+      ${bp('Size the borrow','Requested loan amount maps to debt units via the current book price. Larger sizes fill deeper (worse) bids, so the blended APY rises with size — quote before committing.',
+        `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\nq.debtUnits, q.blendedApy, q.fallbackLiquidity`)}
+    </div>
+    <div class="panel">
+      ${healthBar(d.hf)}
+      <div class="rows" style="margin-top:14px">
+        ${R('Receive now', d.received?money(d.received,0)+' '+m.loan:'—','pos')}
+        ${R('Fixed APY', d.debtUnits?pct(d.blendedApy):'—')}
+        ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), d.feeAmt?'+'+money(d.feeAmt,2)+' '+m.loan:'—')}
+        ${R('Loan at maturity '+tipWarn(MATURITY_TIP), d.totalDebt?money(d.totalDebt,2)+' '+m.loan:'—')}
+        ${R('Maturity date', m.maturity)}
+        ${R('LTV', d.debtUnits?pct(d.ltv,1)+' / '+pct(m.lltv,0):'—', liqCls(d.ltv,m.lltv))}
+        ${R('Liquidation price', d.liqPrice?usd(d.liqPrice)+' per '+m.col:'—',liqCls(d.ltv,m.lltv))}
+        ${d.unfilled>0?R('⚠ Book slippage', 'Only '+money(d.filled,0)+' fillable','warn'):''}
+      </div>
+      ${d.ltv>m.lltv?`<div class="warnrow" style="margin-top:12px">⚠ Exceeds max LTV — add collateral or borrow less</div>`:''}
+      <div class="hint">💡 Rate is fixed to maturity, but collateral can still be liquidated before then if ${m.col} drops.</div>
+      <div class="divline"></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${(!d.debtUnits||!d.col||d.ltv>m.lltv)?'disabled':''} onclick="next()">Review borrow</button></div>
+      <div class="pbm-foot">${poweredBy()}</div>
+    </div>
+  </div>`;
+}
+function fxSetBorrow(req){
+  const m=MARKETS_F[S.sel];
+  S.form.reqBorrow=req;
+  const price=1/(1+m.bestApy/100*(m.days/365));
+  S.form.units=Math.round(req/price); // fee is added to debt, not deducted from proceeds
+}
+function fxBorrow(v){
+  fxSetBorrow(parseFloat((''+v).replace(/,/g,''))||0);
+  render(); const el=document.getElementById('fbIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
+}
+function fxCol(v){
+  S.form.col=parseFloat((''+v).replace(/,/g,''))||0;
+  render(); const el=document.getElementById('fcIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
+}
+
+function fxExecute(){
+  const d=fxMath(); const m=d.m;
+  if(S.txDone){
+    const p=S.position; const ltv=p.debtUnits/(p.col*cPrice(m))*100;
+    const liqPrice=p.debtUnits/(p.col*m.lltv/100);
+    return `<div class="panel" style="max-width:520px;margin:0 auto">
+      <div class="confirm-hero"><div class="ok">✓</div><h3>Borrow confirmed</h3>
+        <p>${money(p.received,0)} ${m.loan} now · owe ${money(p.debtUnits,0)} ${m.loan} at ${m.maturity}.</p>
+        <div class="txhash mono">0x91af…7c2d · confirmed</div></div>
+      <div class="rows">
+        ${R('Received', money(p.received,2)+' '+m.loan,'pos')}
+        ${R('Collateral locked', money(p.col,3)+' '+m.col)}
+        ${R('Fixed APY', pct(p.blendedApy))}
+        ${R('Loan at maturity '+tipWarn(MATURITY_TIP), money(p.debtUnits,2)+' '+m.loan)}
+        ${R('Maturity date', m.maturity)}
+        ${R('LTV', pct(ltv,1)+' / '+pct(m.lltv,0), liqCls(ltv,m.lltv))}
+        ${R('Liquidation price', usd(liqPrice)+' per '+m.col,liqCls(ltv,m.lltv))}
+      </div>
+      <div class="spacer"></div><button class="btn" onclick="next()">Open dashboard</button>
+    </div>`;
+  }
+  return `<div class="panel" style="max-width:520px;margin:0 auto">
+    <h4>Confirm fixed borrow</h4>
+    <div class="quote-timer" id="qtimer">
+      <span class="ring"><span class="spin" style="width:13px;height:13px;border-width:2px"></span> Rate locked for <b id="qsecs">24</b>s</span>
+      <span class="refresh">fixed ${pct(d.blendedApy)} APY</span>
+    </div>
+    <div class="bundle" id="bundle">
+      <div class="bundle-head"><div class="t">Transaction</div></div>
+      <div class="bstep" data-b="0"><span class="bnum">1</span><div class="bt"><b>Lock ${money(d.col,3)} ${tokInline(m.col)}</b></div><span class="state"></span></div>
+      <div class="bstep" data-b="1"><span class="bnum">2</span><div class="bt"><b>Borrow ${money(d.received,0)} ${tokInline(m.loan)} at ${pct(d.blendedApy)}</b></div><span class="state"></span></div>
+    </div>
+    <div class="rows">
+      ${R('Fixed APY', pct(d.blendedApy))}
+      ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), '+'+money(d.feeAmt,2)+' '+m.loan)}
+      ${R('Loan at maturity '+tipWarn(MATURITY_TIP), money(d.totalDebt,2)+' '+m.loan)}
+      ${R('Maturity date', m.maturity)}
+      ${R('LTV', pct(d.ltv,1)+' / '+pct(m.lltv,0), liqCls(d.ltv,m.lltv))}
+      ${R('Liquidation price', usd(d.liqPrice)+' per '+m.col,liqCls(d.ltv,m.lltv))}
+    </div>
+    ${legalFooter()}
+    <div class="spacer"></div>
+    <button class="btn" id="signBtn" onclick="fxSign()">Sign & borrow</button>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
+    ${bp('Bundle supply + take bids','The router auto-fetches executable bids for your size; MidnightBundles wraps the hidden permit, supplyCollateral and takeBids into one atomic signed action.',
+      `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
+  </div>`;
+}
+function fxSign(){
+  clearTimers();
+  const btn=document.getElementById('signBtn'); btn.disabled=true; btn.innerHTML='Awaiting signature…';
+  runBundle(()=>{
+    const d=fxMath();
+    // debtUnits on the position is fee-inclusive: what's actually owed at maturity
+    S.position={ type:'fixed', m:d.m, col:d.col, debtUnits:d.totalDebt, received:d.received, blendedApy:d.blendedApy, daysLeft:d.m.days };
+    S.txDone=true; toast('Fixed borrow executed'); render();
+  });
+}
+function fxMetrics(){
+  const p=S.position; const m=p.m;
+  const colValue=p.col*cPrice(m);
+  const maxDebt=colValue*m.lltv/100;
+  const hf=maxDebt/p.debtUnits;
+  const liqPrice=p.debtUnits/(p.col*m.lltv/100);
+  const ltv=p.debtUnits/colValue*100;
+  const dl=p.daysLeft;
+  const matured=dl<=0;
+  const days=Math.max(0,Math.floor(dl));
+  const hrs=Math.max(0,Math.floor((dl-days)*24)) || (matured?0:11);
+  return {p,m,colValue,maxDebt,hf,liqPrice,ltv,dl,matured,days,hrs};
+}
+/* fixed repay auto-detects before vs at/after maturity */
+function fxRepay(){ fxMetrics().matured ? openRepayMaturity() : openRepayEarly(); }
+
+function fxDashboard(){
+  if(S.detail) return fxDetail();
+  const {p,m,ltv,hf,matured,days}=fxMetrics();
+  return `<div class="fade-in">
+    <div class="dash-head">
+      <div><div class="dash-title">Your positions</div><div class="dash-sub">Morpho Midnight · ${m.chain}</div></div>
+    </div>
+    <div class="poslist">
+      <div class="posrow ${(ltvRisk(ltv,m.lltv)||matRisk(p)||matured)?'risk':''}" onclick="openDetail()">
+        <div class="id">${pairBadge(m.col,m.loan)}<div><div class="pn">${m.col} / ${m.loan}</div><div class="ps">Borrow · fixed</div></div></div>
+        <div class="cells">
+          <div class="cell"><div class="l">Loan at maturity</div><div class="v">${money(p.debtUnits,0)} <small>${m.loan}</small></div></div>
+          <div class="cell"><div class="l">Collateral</div><div class="v">${money(p.col,3)} <small>${m.col}</small></div></div>
+          <div class="cell"><div class="l">APY · fixed</div><div class="v" style="color:#a98bff">${pct(p.blendedApy)}</div></div>
+          <div class="cell"><div class="l">${matured?'Status':'Matures in'}</div><div class="v ${matRisk(p)?'red':''}">${matured?'<span class="badge-h risk">Matured</span>':days+' <small>days</small>'}</div></div>
+          <div class="cell"><div class="l">LTV</div><div class="v ${ltvRisk(ltv,m.lltv)?'red':''}">${pct(ltv,1)} ${healthBadge(hf)}</div></div>
+        </div>
+        <div class="acts" onclick="event.stopPropagation()">
+          <button class="btn sm" onclick="fxRepay()">Repay</button>
+          <button class="btn ghost sm" onclick="openAddColFixed()">Add collateral</button>
+        </div>
+        <span class="chev-r">›</span>
+      </div>
+    </div>
+  </div>`;
+}
+function fxDetail(){
+  const {p,m,colValue,ltv,hf,liqPrice,matured,days,hrs}=fxMetrics();
+  return `<div class="fade-in">
+    <div class="flow-head" style="margin-bottom:16px">
+      <button class="back" onclick="closeDetail()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Positions</button>
+      <div class="flow-title">${pairBadge(m.col,m.loan)}<div><h2 style="font-size:16px">${m.col} / ${m.loan}</h2><div class="tag">Morpho Midnight · ${m.chain} · fixed rate</div></div></div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        ${matured
+          ? `<div class="warnrow" style="margin:0 0 14px">⚠ Term reached ${m.maturity}. Repay ${money(p.debtUnits,0)} ${m.loan} to release collateral.</div>`
+          : `<div class="section-label">Maturity countdown</div>
+             <div class="countdown"><div class="cd-cell"><div class="n">${days}</div><div class="u">days</div></div><div class="cd-cell"><div class="n">${hrs}</div><div class="u">hours</div></div><div class="cd-cell"><div class="n">${m.maturity.slice(5)}</div><div class="u">matures</div></div></div>
+             <div class="divline"></div>`}
+        ${healthBar(hf)}
+        <div class="rows" style="margin-top:14px">
+          ${Rbig('Loan at maturity '+tipWarn(MATURITY_TIP), money(p.debtUnits,2)+' '+m.loan)}
+          ${R('Collateral', money(p.col,3)+' '+m.col+' · '+usd(colValue))}
+          ${R('Fixed APY', pct(p.blendedApy))}
+          ${R('Maturity date', m.maturity)}
+          ${R('LTV', pct(ltv,1)+' / '+pct(m.lltv,0), liqCls(ltv,m.lltv))}
+          ${R('Liquidation price', usd(liqPrice)+' per '+m.col,liqCls(ltv,m.lltv))}
+        </div>
+        <div class="divline"></div>
+        <div class="btn-row">
+          <button class="btn" onclick="fxRepay()">${matured?'Repay & withdraw':'Repay'}</button>
+          <button class="btn ghost" onclick="openAddColFixed()">Add collateral</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="section-label">More actions</div>
+        <div class="manage-actions">
+          <div class="maction" onclick="fxClosePosition()"><div class="mt"><span class="mi">✓</span> Repay all & withdraw</div><div class="md">Clears the debt and returns every ${m.col}</div></div>
+          <div class="maction" onclick="openExitInfo()"><div class="mt"><span class="mi">ℹ</span> Exit options</div><div class="md">How closing works</div></div>
+        </div>
+        ${bp('Monitor & exit','Read outstanding debt + collateral. Debt is repaid at par at any time — the full fixed interest is owed for the whole term, so there is no early-repayment discount.',
+          `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\npos.debtUnits, pos.collateral, pos.maturity\n<span class="fn">repay</span>(market, amount) <span class="cm">// 1:1, any time</span>`)}
+      </div>
+    </div>
+  </div>`;
+}
+/* --- fixed: simulate the resulting position --- */
+// No secondary market: full fixed interest is always due, so debt is repaid at par (1:1),
+// whether the user repays a second after borrowing or on the maturity date.
+function fxRepayPrice(){ return 1; }
+// price received today per unit of new debt taken on (current book best rate over remaining term)
+function fxBorrowPrice(){ const p=S.position,m=p.m; const days=Math.max(1,p.daysLeft); return 1/(1+m.bestApy/100*(days/365)); }
+function fxSim(repay=0, withdraw=0, add=0, borrow=0){
+  const p=S.position, m=p.m;
+  const unitsCleared = repay>0 ? Math.min(repay/fxRepayPrice(), p.debtUnits) : 0;
+  const feeAmt = borrow*m.origFee/100;
+  const unitsAdded = borrow>0 ? borrow/fxBorrowPrice() + feeAmt : 0;
+  const nd = Math.max(0, p.debtUnits - unitsCleared + unitsAdded);
+  const nc = Math.max(0, p.col + add - withdraw);
+  const cv = nc*cPrice(m);
+  const ltv = cv>0 ? nd/cv*100 : 0;
+  const hf  = nd>0 ? (cv>0?(cv*m.lltv/100)/nd:0) : Infinity;
+  const liq = (nc>0 && nd>0) ? nd/(nc*m.lltv/100) : 0;
+  return {nd,nc,cv,ltv,hf,liq,feeAmt,unitsCleared,unitsAdded};
+}
+function fxMaxWithdraw(repay=0){
+  const p=S.position, m=p.m;
+  const nd=Math.max(0,p.debtUnits - (repay>0?Math.min(repay/fxRepayPrice(),p.debtUnits):0));
+  if(nd<=0.005) return p.col;
+  return Math.max(0, p.col - (nd/(m.lltv/100))/cPrice(m)*SAFETY);
+}
+function fxMaxBorrow(add=0){
+  const p=S.position, m=p.m;
+  const cv=(p.col+add)*cPrice(m);
+  const roomUnits=Math.max(0, cv*m.lltv/100 - p.debtUnits);
+  return roomUnits*fxBorrowPrice()/(1+m.origFee/100);
+}
+function fxSimRows(sim, opts={}){
+  const p=S.position, m=p.m, cur=fxMetrics();
+  const cleared = sim.nd<=0.005;
+  return `
+    ${Rd('Loan at maturity '+tipWarn(MATURITY_TIP), money(p.debtUnits,2)+' '+m.loan, cleared?'0':money(sim.nd,2)+' '+m.loan)}
+    ${Rd('Collateral', money(p.col,3)+' '+m.col, sim.nc<=0.00005?'0':money(sim.nc,3)+' '+m.col)}
+    ${R('Fixed APY', pct(p.blendedApy))}
+    ${opts.feeAmt?R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), '+'+money(opts.feeAmt,2)+' '+m.loan):''}
+    ${R('Maturity date', m.maturity)}
+    ${Rd('LTV', pct(cur.ltv,1), cleared||sim.nc<=0?'—':pct(sim.ltv,1)+' / '+pct(m.lltv,0), (cleared||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}
+    ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (cleared||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (cleared||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
+}
+function fxSimWarn(sim){
+  const m=S.position.m;
+  if(sim.nd>0.005 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
+  if(sim.nd>0.005 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV — repay more or withdraw less.';
+  if(sim.nd>0.005 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  return null;
+}
+function fxApply(sim,msg){
+  const p=S.position;
+  p.debtUnits = sim.nd<=0.005?0:sim.nd;
+  p.col = sim.nc<=0.00005?0:sim.nc;
+  toast(msg); closeModal();
+  if(p.debtUnits===0 && p.col===0){ if(S.product==='dash'){ dashRemove(); toast('Position closed'); return; } S.position=null; go('flow','fixed'); toast('Position closed'); }
+  else render();
+}
+
+/* Repay & withdraw collateral — auto-prices against maturity */
+function openRepayEarly(){ openFxRepay(); }
+function openRepayMaturity(){ openFxRepay(); }
+function openFxRepay(){
+  const p=S.position, m=p.m, matured=p.daysLeft<=0;
+  const price=fxRepayPrice();
+  const fullCost=p.debtUnits*price;
+  modal('Repay & withdraw', `
+    <div class="field"><label>Repay<span class="bal">Pay off in full: <b>${money(fullCost,2)} ${m.loan}</b></span></label>
+      <div class="inp"><input id="rIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxRepayPrev()"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="setVal('rIn','${fullCost.toFixed(2)}')">MAX</button></div>${usdSub('rIn',m.loan)}</div>
+    <div class="field"><label>Withdraw collateral<span class="bal">Deposited: <b>${money(p.col,3)} ${m.col}</b></span></label>
+      <div class="inp"><input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxRepayPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('wIn',fxMaxWithdraw(val('rIn')).toFixed(4))">MAX</button></div>${usdSub('wIn',m.col)}</div>
+    <div class="rows" id="simRows">${fxSimRows(fxSim())}</div>
+    <div id="simWarn"></div>
+    ${bp('Repay + withdraw','Interest does not accrue over time and there is no secondary market, so debt is always repaid at par. Bundle repay and withdrawCollateral so settlement and collateral release are atomic.',
+      `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\n<span class="kw">await</span> midnight.<span class="fn">bundle</span>([\n  <span class="fn">repay</span>(market, amount), <span class="cm">// 1:1 against debt</span>\n  <span class="fn">withdrawCollateral</span>(market, colAmt),\n]);`)}
+    <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxRepay()">Confirm</button>`);
+  fxRepayPrev();
+}
+function fxRepayPrev(){
+  const p=S.position, m=p.m; const price=fxRepayPrice();
+  updUsd('rIn',m.loan); updUsd('wIn',m.col);
+  const repay=Math.min(val('rIn'), p.debtUnits*price), wd=Math.min(val('wIn'),p.col);
+  const sim=fxSim(repay,wd,0,0);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=fxSimRows(sim);
+  const warn=fxSimWarn(sim), wEl=document.getElementById('simWarn'), btn=document.getElementById('simBtn');
+  if(wEl) wEl.innerHTML = warn?`<div class="warnrow" style="margin-top:12px">⚠ ${warn}</div>`:'';
+  if(btn){ const none=repay<=0&&wd<=0; btn.disabled=!!warn||none; btn.textContent = none?'Enter an amount':(repay>0&&wd>0?'Repay & withdraw':repay>0?'Repay':'Withdraw collateral'); }
+}
+function doFxRepay(){
+  const p=S.position; const price=fxRepayPrice();
+  const repay=Math.min(val('rIn'), p.debtUnits*price), wd=Math.min(val('wIn'),p.col);
+  const sim=fxSim(repay,wd,0,0);
+  if(fxSimWarn(sim)||(repay<=0&&wd<=0)) return;
+  const parts=[]; if(repay>0)parts.push('repaid '+usd(repay)); if(wd>0)parts.push('withdrew '+money(wd,3)+' '+p.m.col);
+  fxApply(sim, parts.join(' · '));
+}
+
+/* Add collateral & borrow more — new borrow prices off the current book */
+function openAddColFixed(){
+  const p=S.position, m=p.m; const bal=m.col==='cbBTC'?1.2:20;
+  modal('Add collateral & borrow', `
+    <div class="field"><label>Add collateral<span class="bal">Balance: <b>${money(bal,3)} ${m.col}</b></span></label>
+      <div class="inp"><input id="acIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxAddPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('acIn','${bal}')">MAX</button></div>${usdSub('acIn',m.col)}</div>
+    <div class="field"><label>Borrow more<span class="bal">Available: <b id="capLbl">${money(Math.max(0,fxMaxBorrow(0)),0)} ${m.loan}</b></span></label>
+      <div class="inp"><input id="boIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxAddPrev()"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="setVal('boIn',Math.floor(fxMaxBorrow(val('acIn'))))">MAX</button></div>${usdSub('boIn',m.loan)}</div>
+    <div class="rows" id="simRows">${fxSimRows(fxSim())}</div>
+    <div id="simWarn"></div>
+    <div class="hint">💡 Adding collateral alone improves your buffer — rate and debt don't change. Borrowing more sells additional debt units into the book at the current rate, due on the same maturity date.</div>
+    ${bp('Supply collateral + take bids','Bundled atomically. New borrow is quoted against the live book for the remaining term, so it settles on the existing maturity date.',
+      `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
+    <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxAdd()">Confirm</button>`);
+  fxAddPrev();
+}
+function fxAddPrev(){
+  const p=S.position, m=p.m;
+  updUsd('acIn',m.col); updUsd('boIn',m.loan);
+  const add=val('acIn'), borrow=val('boIn');
+  const sim=fxSim(0,0,add,borrow);
+  const rows=document.getElementById('simRows'); if(rows) rows.innerHTML=fxSimRows(sim,{feeAmt:sim.feeAmt});
+  const cap=document.getElementById('capLbl'); if(cap) cap.textContent=money(Math.max(0,fxMaxBorrow(add)),0)+' '+m.loan;
+  const warn=fxSimWarn(sim), wEl=document.getElementById('simWarn'), btn=document.getElementById('simBtn');
+  if(wEl) wEl.innerHTML = warn?`<div class="warnrow" style="margin-top:12px">⚠ ${warn}</div>`:'';
+  if(btn){ const none=add<=0&&borrow<=0; btn.disabled=!!warn||none; btn.textContent = none?'Enter an amount':(add>0&&borrow>0?'Add collateral & borrow':add>0?'Add collateral':'Borrow'); }
+}
+function doFxAdd(){
+  const p=S.position, m=p.m;
+  const add=val('acIn'), borrow=val('boIn');
+  const sim=fxSim(0,0,add,borrow);
+  if(fxSimWarn(sim)||(add<=0&&borrow<=0)) return;
+  if(borrow>0){
+    // blend the existing fixed rate with the current book rate, weighted by proceeds
+    const oldRecv=p.received||0;
+    p.blendedApy = (p.blendedApy*oldRecv + m.bestApy*borrow)/(oldRecv+borrow);
+    p.received = oldRecv + borrow;
+  }
+  const parts=[]; if(add>0)parts.push('added '+money(add,3)+' '+m.col); if(borrow>0)parts.push('borrowed '+money(borrow,2)+' '+m.loan);
+  fxApply(sim, parts.join(' · '));
+}
+function fxClosePosition(){
+  const p=S.position;
+  openFxRepay();
+  setVal('rIn',(p.debtUnits*fxRepayPrice()).toFixed(2));
+  setVal('wIn',p.col.toFixed(4));
+}
+function openExitInfo(){
+  modal('Exit options', `
+    <div class="rows">
+      ${R('Repay any time', 'At par · full interest due')}
+      ${R('Partial repay', 'Any amount, reduces debt')}
+      ${R('Withdraw collateral', 'Once debt is cleared')}
+      ${R('Add collateral', 'Anytime · rate unchanged')}
+    </div>
+    <div class="hint">💡 There's no secondary market and no early-repayment discount: the full fixed interest is owed for the entire term, so repaying today costs the same as repaying at maturity.</div>
+    <div class="spacer"></div><button class="btn ghost" onclick="closeModal()">Got it</button>`);
+}
+
+/* -------------------- MODAL + TOAST -------------------- */
+function modal(title, body){
+  document.getElementById('modal-root').innerHTML=`
+    <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-head"><h4>${title}</h4><button class="x" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">${body}</div>
+      </div>
+    </div>`;
+}
+function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+function toast(msg, type='ok'){
+  const w=document.getElementById('toasts');
+  const el=document.createElement('div'); el.className='toast '+type; el.innerHTML=`<span class="dot"></span>${msg}`;
+  w.appendChild(el); setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(8px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300);},2600);
+}
+
+/* -------------------- quote countdown for fixed execute -------------------- */
+const _origFixed=fixedScreen;
+// start timer after render when on fixed execute
+function startQuoteTimer(){
+  clearTimers();
+  let s=24;
+  S.quoteTimer=setInterval(()=>{
+    const el=document.getElementById('qsecs'); if(!el){clearTimers();return;}
+    s--; if(s<=0){ s=24; toast('Quote refreshed','info'); }
+    el.textContent=s;
+  },1000);
+}
+
+// hook render to manage timers
+const _render=render;
+render=function(){ _render(); if(S.product==='fixed'&&S.step===2&&!S.txDone){ startQuoteTimer(); } };
+
+/* -------------------- INIT -------------------- */
+render();
+</script>
+</body>
+</html>
