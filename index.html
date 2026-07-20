@@ -420,6 +420,66 @@ b,strong{font-weight:400}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1150px){.cards{grid-template-columns:repeat(2,1fr)}.card.dash{min-height:auto}}
 @media(max-width:900px){.cards{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+/* Fixed-rate: inferred collateral box + prominent live rate */
+.fx-coll{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:12px 14px}
+.fx-coll-id{display:flex;align-items:center;gap:9px;min-width:0}
+.fx-coll .amt{font-size:15px}
+.fx-coll .sub{font-size:11px;color:var(--muted2);margin-top:2px;display:flex;align-items:center;gap:5px}
+.fx-rate{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--accent-soft);padding:13px 16px;margin:14px 0 4px}
+.fx-rate .r .l{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.fx-rate .r .v{font-size:22px;letter-spacing:-.5px;color:var(--accent2)}
+.fx-rate .q{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.fx-rate .q .spin{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.fx-ltvbtn{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--accent2);background:var(--accent-soft);border:1px solid var(--border);border-radius:7px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+.fx-ltvbtn:hover{border-color:var(--accent2)}
+.fx-ltvbtn svg{width:11px;height:11px}
+.ltv-set{display:flex;flex-direction:column;gap:10px}
+.ltv-set input[type=range]{width:100%;accent-color:var(--accent)}
+.ltv-read{display:flex;align-items:baseline;justify-content:space-between}
+.ltv-read span:first-child{font-size:24px;letter-spacing:-.5px;color:var(--accent2)}
+
+/* Portfolio (top-level dashboard) */
+.pf-hero{margin:4px 2px 20px}
+.pf-hero h1{font-size:27px;letter-spacing:-.6px;margin-bottom:9px}
+.pf-hero p{color:var(--muted);font-size:14px;max-width:660px}
+.pf-total{display:flex;gap:36px;margin:0 2px 26px;padding:16px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2))}
+.pf-total .t{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.pf-total .v{font-size:23px;letter-spacing:-.4px}
+.pf-section{margin:24px 0}
+.pf-shead{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;flex-wrap:wrap}
+.pf-shead h3{font-size:15px;letter-spacing:-.2px}
+.pf-shead .s{font-size:12px;color:var(--muted2)}
+.pf-list{display:flex;flex-direction:column;gap:9px}
+.pf-row{display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:13px 16px}
+.pf-idn{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.pf-idn-t{min-width:0}
+.pf-name{font-size:14px}
+.pf-sym{font-size:11.5px;color:var(--muted2)}
+.pf-elig-set{display:inline-flex;gap:6px;margin-left:4px}
+.pf-elig{width:23px;height:23px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0}
+.pf-elig svg{width:13px;height:13px;display:block}
+.pf-elig.earn{color:var(--green);background:var(--green-soft);cursor:pointer}
+.pf-elig.earn:hover{filter:brightness(1.15)}
+.pf-elig.borrow{color:var(--accent2);background:var(--accent-soft)}
+.pf-cell{text-align:right;min-width:104px}
+.pf-cell .l{font-size:10.5px;color:var(--muted2);margin-bottom:4px}
+.pf-cell .v{font-size:14px;white-space:nowrap}
+.pf-cell .v small{color:var(--muted);font-size:11.5px}
+.pf-opps{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
+.pf-opp{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:linear-gradient(180deg,var(--panel),var(--bg2));padding:13px 15px;cursor:pointer;transition:.15s}
+.pf-opp:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pf-opp-t{flex:1;min-width:0}
+.pf-apy{font-size:12px;color:var(--green);margin-top:2px}
+.pf-sub2{font-size:11.5px;color:var(--muted2)}
+.pf-collat{display:flex;align-items:center;gap:7px;margin-top:4px;min-width:0}
+.pf-avs{display:inline-flex;flex-shrink:0}
+.pf-avs .tok{margin-left:-6px;box-shadow:0 0 0 2px var(--panel)}
+.pf-avs .tok:first-child{margin-left:0}
+.pf-collat .pf-sub2{line-height:1.35}
+.pf-go{color:var(--muted2);display:flex;transition:.15s;flex-shrink:0}
+.pf-opp:hover .pf-go{color:var(--text);transform:translateX(3px)}
+.pf-flows{margin-top:32px}
+@media(max-width:720px){.pf-row{flex-wrap:wrap;gap:10px}.pf-cell{min-width:0;flex:1;text-align:left}}
 </style>
 </head>
 <body>
@@ -564,11 +624,11 @@ const MARKETS_F = [ // fixed, Midnight
 
 const PRODUCTS = {
   earn:{name:'Earn', tag:'Morpho Vaults', ico:'📈', color:'var(--green)',
-        steps:['Vaults','Deposit','Execute','Dashboard']},
+        steps:['Portfolio','Deposit','Execute','Dashboard']},
   variable:{name:'Variable-rate borrow', tag:'Morpho Blue', ico:'⚡', color:'var(--accent2)',
-        steps:['Markets','Borrow','Execute','Dashboard']},
+        steps:['Portfolio','Borrow','Execute','Dashboard']},
   fixed:{name:'Fixed-rate borrow', tag:'Morpho Midnight', ico:'🌙', color:'var(--fixed2)',
-        steps:['Markets','Borrow','Execute','Dashboard']},
+        steps:['Portfolio','Borrow','Execute','Dashboard']},
   dash:{name:'Edge case sandbox', tag:'All products', ico:'▦', color:'var(--accent2)', steps:[]},
 };
 // clicking a vault/market card goes straight to its page (no intermediary confirm step)
@@ -579,7 +639,7 @@ function go(route, product){
   clearTimers();
   S.route=route; S.detail=false; S.dashKind=null;
   if(route==='home'){ S.product=null; }
-  if(product){ S.product=product; S.step=0; S.sel=null; S.form={}; S.position=null; if(product==='dash') seedDash(); }
+  if(product){ S.product=product; S.step=0; S.sel=null; S.form={}; S.position=null; S.fxDrift=0; S.fxSecs=15; if(product==='dash') seedDash(); }
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -601,6 +661,59 @@ function render(){
 }
 
 /* -------------------- HOME -------------------- */
+// Portfolio = the first step of every flow (replaces the old vault/market lists).
+// mode 'earn' shows the Earn section; 'borrow' shows the Lending section. Assets always shown.
+function Portfolio(mode){
+  const rows=[...WALLET].sort((a,b)=>assetValue(b)-assetValue(a));
+  const net=rows.reduce((s,a)=>s+assetValue(a),0);
+  const arrow=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  const assetRows=rows.map(a=>`
+      <div class="pf-row">
+        <div class="pf-idn">
+          ${tok(a.sym,34)}
+          <div class="pf-idn-t"><div class="pf-name">${a.sym}</div></div>
+          ${eligBadges(a.sym, mode)}
+        </div>
+        <div class="pf-cell"><div class="l">Balance</div><div class="v">${money(a.bal, a.bal>=1000?2:4)} <small>${a.sym}</small></div></div>
+        <div class="pf-cell"><div class="l">Value</div><div class="v">${usd(assetValue(a))}</div></div>
+        <div class="pf-cell"><div class="l">Price</div><div class="v">${usd(PRICE_USD[a.sym]||0)}</div></div>
+      </div>`).join('');
+  let opp='';
+  if(mode==='earn'){
+    const cards=VAULTS.map((v,i)=>`
+      <div class="pf-opp" onclick="pick(${i})" role="button" tabindex="0">
+        ${tok(v.asset,30)}
+        <div class="pf-opp-t"><div class="pf-name">${v.name}</div><div class="pf-apy">${pct(v.netApy)} APY</div></div>
+        <span class="pf-go">${arrow}</span>
+      </div>`).join('');
+    opp=`<div class="pf-section"><div class="pf-shead"><h3>Earn</h3><span class="s">Earn yield on idle assets without lockups</span></div><div class="pf-opps">${cards}</div></div>`;
+  } else if(mode==='borrow'){
+    const arr=S.product==='fixed'?MARKETS_F:MARKETS_V;
+    const loans=[...new Set(arr.map(m=>m.loan))];
+    const cards=loans.map(loan=>{
+      const cols=[...new Set(arr.filter(m=>m.loan===loan).map(m=>m.col))];
+      const avs=cols.map(c=>tok(c,18)).join('');
+      return `
+      <div class="pf-opp" onclick="pickBorrow('${loan}')" role="button" tabindex="0">
+        ${tok(loan,30)}
+        <div class="pf-opp-t"><div class="pf-name">Borrow ${loan}</div>
+          <div class="pf-collat"><span class="pf-avs">${avs}</span><span class="pf-sub2">against ${cols.join(', ')}</span></div></div>
+        <span class="pf-go">${arrow}</span>
+      </div>`;}).join('');
+    opp=`<div class="pf-section"><div class="pf-shead"><h3>Lending</h3><span class="s">Borrow against your collateral</span></div><div class="pf-opps">${cards}</div></div>`;
+  }
+  return `
+    <div class="pf-total">
+      <div><div class="t">Net worth</div><div class="v">${usd(net)}</div></div>
+      <div><div class="t">Assets</div><div class="v">${rows.length}</div></div>
+    </div>
+    <div class="pf-section">
+      <div class="pf-shead"><h3>Assets</h3></div>
+      <div class="pf-list">${assetRows}</div>
+    </div>
+    ${opp}`;
+}
+
 function Home(){
   return `
   <div class="fade-in">
@@ -842,6 +955,11 @@ const MATURITY_TIP = 'The whole term\u2019s interest is charged the moment you b
 const VAULT_LIQ_TIP = 'A vault can only pay out what is idle plus what it can pull back from its markets. When borrowers have drawn most of the supply, withdrawals are capped until they repay or an allocator reallocates.';
 const LIQ_TIP = 'Capped by the loan assets currently available in this market. Lenders\u2019 supply is drawn down by other borrowers; the cap rises as they repay or as lenders supply more.';
 const FEE_TIP = 'Charged by this app, not by Morpho. You receive the full amount you entered — the fee is added to your debt and repaid along with it.';
+const MAX_OPEN_LTV = 50; // integrator-set max LTV to open — deliberately below protocol liquidation LLTV
+const MAX_LTV_TIP = 'Max LTV to open — set by the integrator, deliberately below the protocol liquidation LTV (LLTV). Integrators (e.g. Coinbase) cap this so users open with a safety buffer; without a cap a small price move can liquidate them very quickly.';
+const FX_APY_TIP = 'Interest starts accruing the moment the position is active. The whole fixed term is charged up front — not day by day.';
+const FX_EXIT_TIP = 'The rate is fixed until maturity. Exiting early still pays the full accrued interest — unless a secondary market for early exit is offered (a separate flow).';
+const FX_MATURITY_TIP = 'You must repay before maturity or the position is liquidated.';
 
 /* helper: stat row */
 function R(l,v,cls='',help){ return `<div class="row"><span class="l">${l}${help?`<span class="help" title="${help}">?</span>`:''}</span><span class="v ${cls}">${v}</span></div>`; }
@@ -856,6 +974,40 @@ const setVal=(id,v)=>{const e=document.getElementById(id);if(e){e.value=v;e.disp
 
 /* USD value shown under every amount input */
 const PRICE_USD = {USDC:1, USDT:1, DAI:1, sUSDe:1.05, WETH:2920, wstETH:3420, ezETH:3510, cbBTC:64850, WBTC:64850};
+
+/* -------------------- PORTFOLIO (top-level dashboard) -------------------- */
+// A wallet's holdings — the shared first step all three flows branch from.
+const WALLET = [
+  {sym:'cbBTC',  bal:2.5},
+  {sym:'wstETH', bal:40},
+  {sym:'USDC',   bal:25000},
+  {sym:'WETH',   bal:4.2},
+];
+const earnableAsset   = s => VAULTS.some(v=>v.asset===s);                 // has a Morpho vault
+const vaultIndexOf    = s => VAULTS.findIndex(v=>v.asset===s);
+const earnApyOf       = s => { const v=VAULTS.find(v=>v.asset===s); return v?v.netApy:null; };
+const collateralAsset = s => [...MARKETS_V,...MARKETS_F].some(m=>m.col===s); // usable as collateral
+const LOAN_ASSETS     = [...new Set(MARKETS_V.map(m=>m.loan))];            // borrowable loan assets (USDC, WETH)
+const assetValue      = a => a.bal*(PRICE_USD[a.sym]||0);
+
+// Jump straight into a flow from the portfolio, preselected at the config step.
+// Pick a loan asset from the portfolio step → preselect its market and advance to the borrow config.
+function pickBorrow(loan){ const arr=S.product==='fixed'?MARKETS_F:MARKETS_V; const i=arr.findIndex(m=>m.loan===loan); pick(i<0?0:i); }
+
+const EARN_TIP   = 'Earn yield — deposit this asset into a Morpho vault. Click to start.';
+const BORROW_TIP = 'Can be used as collateral to borrow against on Morpho.';
+// sprout — evokes growth / yield
+const EARN_ICO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V11"/><path d="M12 11C12 7 9 5 4 5c0 4 3 6 8 6Z"/><path d="M12 11c0-3.5 2.5-5.5 7-5.5 0 3.5-2.5 5.5-7 5.5Z"/></svg>';
+const BORROW_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
+// The Earn badge is a shortcut into the deposit flow for that asset.
+function goEarn(sym){ go('flow','earn'); const i=vaultIndexOf(sym); S.sel=i<0?0:i; S.step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+// mode gates which eligibility is relevant: 'earn' flow shows only earn, 'borrow' flow only collateral.
+function eligBadges(sym, mode){
+  let h='';
+  if(mode!=='borrow' && earnableAsset(sym))   h+=`<span class="ttip pf-elig earn" onclick="goEarn('${sym}')" role="button" tabindex="0">${EARN_ICO}<span class="tip">${EARN_TIP}</span></span>`;
+  if(mode!=='earn'   && collateralAsset(sym)) h+=`<span class="ttip pf-elig borrow">${BORROW_ICO}<span class="tip">${BORROW_TIP}</span></span>`;
+  return h?`<span class="pf-elig-set">${h}</span>`:'';
+}
 const usdOf = (sym,amt)=> (PRICE_USD[sym]||0)*amt;
 const usdSub = (inputId,sym,amt=0)=> `<div class="usdsub" id="usd_${inputId}">${usd(usdOf(sym,amt))}</div>`;
 function updUsd(inputId,sym){ const e=document.getElementById('usd_'+inputId); if(e) e.textContent=usd(usdOf(sym,val(inputId))); }
@@ -899,27 +1051,9 @@ function earnScreen(){
   }
 }
 function earnSelect(){
-  const list=VAULTS.map((v,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${tokBadge(v.asset)}<div><div class="opt-name">${v.name}</div>
-          <div class="opt-meta"><span class="chiptag">${v.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v">${apyHover(v,true)}</div><div class="l">variable</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Total deposits</div><div class="v">$${v.tvl}M</div></div>
-        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(v.liq)}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Earn</h4>${poweredBy()}</div>
-      <div class="desc">Earn returns on your assets with no lock-up.</div>
-      ${list}
-      ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
-        `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}
-    </div>
-  </div>`;
+  return `${Portfolio('earn')}
+    ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
+      `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}`;
 }
 
 /* Deposit page (vault page) — terms + amount + live preview in one */
@@ -1209,27 +1343,9 @@ function variableScreen(){
   }
 }
 function varSelect(){
-  const list=MARKETS_V.map((m,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
-          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v" style="color:var(--accent2)">${pct(m.apy)} APY</div><div class="l">variable</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(mLiq(m))}</div></div>
-        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,1)}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Variable-rate borrow</h4>${poweredBy()}</div>
-      <div class="desc">Borrow against your collateral at a rate that moves with the market.</div>
-      ${list}
-      ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
-        `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}
-    </div>
-  </div>`;
+  return `${Portfolio('borrow')}
+    ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
+      `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}`;
 }
 function selMkt(i){ S.sel=i; render(); }
 
@@ -1575,28 +1691,9 @@ function fixedScreen(){
   }
 }
 function fxSelect(){
-  const list=MARKETS_F.map((m,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
-          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v" style="color:var(--fixed2)">${pct(m.bestApy)} APY</div><div class="l">fixed · for $1,000 borrow</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Maturity</div><div class="v">${m.maturity}</div></div>
-        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,0)}</div></div>
-        <div class="s"><div class="l">Book depth</div><div class="v">${usd(bidsOf(m).reduce((a,b)=>a+b[1],0))}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Fixed-rate borrow</h4>${poweredBy()}</div>
-      <div class="desc">Lock your rate until a maturity date.</div>
-      ${list}
-      ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
-        `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}
-    </div>
-  </div>`;
+  return `${Portfolio('borrow')}
+    ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
+      `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}`;
 }
 /* fixed math: walk the bid book */
 function fxQuote(borrowUnits){
@@ -1611,20 +1708,42 @@ function fxQuote(borrowUnits){
   const blendedApy= blendedPrice>0 ? ((1/blendedPrice)-1)*(365/m.days)*100 : m.bestApy;
   return {m, proceeds, filled:fillable, unfilled:Math.max(0,borrowUnits-fillable), blendedPrice, blendedApy};
 }
+
+// --- Fixed-rate: loan-amount-first quoting ---
+const fxDriftedApy = base => Math.max(0.1, base + (S.fxDrift||0)); // small live market drift
+function fxColBal(m){ const w=WALLET.find(a=>a.sym===m.col); return w?w.bal:0; }
+const FX_IMPACT = 1.2; // %-points added to the fixed rate per $100k borrowed — size sensitivity ("consuming the book")
+function fxRateFor(m, received){ return fxDriftedApy(m.bestApy) + FX_IMPACT*(received/1e5); }
+function fxBookProceeds(){ const m=MARKETS_F[S.sel]; const price=1/(1+fxDriftedApy(m.bestApy)/100*(m.days/365)); return bidsOf(m).reduce((a,b)=>a+b[1],0)*price*0.98; }
+// Max receivable at the config step: min(collateral cap at the chosen max-open LTV, total book depth).
+function fxMaxOpenBorrow(){
+  const m=MARKETS_F[S.sel]; const maxLtv=S.form.maxLtv||MAX_OPEN_LTV;
+  const byCol= fxColBal(m)*cPrice(m)*(maxLtv/100);
+  return Math.max(0, Math.min(byCol, fxBookProceeds()));
+}
 function fxMath(){
   const m=MARKETS_F[S.sel];
-  const debtUnits=S.form.units||0;        // principal debt units sold into the book
-  const col=S.form.col||0;
-  const q=fxQuote(debtUnits);
-  const received=q.proceeds;              // user receives the full proceeds now
-  const feeAmt=q.proceeds*m.origFee/100;  // origination fee is ADDED to the debt
-  const totalDebt=debtUnits+feeAmt;       // total repayable at maturity
-  const colValue=col*cPrice(m);
-  const maxDebt=colValue*m.lltv/100;
-  const ltv= colValue>0? totalDebt/colValue*100:0;
+  const maxLtv=S.form.maxLtv||MAX_OPEN_LTV;   // integrator max-open cap (editable)
+  const req=Math.max(0,S.form.reqBorrow||0);  // desired loan amount received (primary input)
+  const received=Math.min(req, fxBookProceeds());
+  const blendedApy=fxRateFor(m, received);    // rises with size + live drift
+  const price=1/(1+blendedApy/100*(m.days/365));
+  const debtUnits= price>0? received/price : 0;  // principal owed at maturity
+  const feeAmt=received*m.origFee/100;           // origination fee ADDED to the debt
+  const totalDebt=debtUnits+feeAmt;
+  const colPrice=cPrice(m);
+  const reqCol= colPrice>0 ? (totalDebt/(maxLtv/100))/colPrice : 0; // collateral to open at the cap
+  const col= S.form.col!=null ? S.form.col : reqCol;                // editable; defaults to reqCol
+  const colValue= col*colPrice;
+  const ltv= colValue>0? totalDebt/colValue*100 : 0;
   const liqPrice= col>0? totalDebt/(col*m.lltv/100):0;
   const hf= totalDebt>0? (colValue*m.lltv/100)/totalDebt:Infinity;
-  return {...q, m, debtUnits, col, feeAmt, received, totalDebt, colValue, maxDebt, ltv, liqPrice, hf};
+  const colBal=fxColBal(m);
+  const insufficient= col>colBal+1e-9;
+  const overCap= req>0 && col>0 && ltv>maxLtv+0.1;
+  const overLltv= req>0 && col>0 && ltv>m.lltv+0.1;
+  const unfilled= Math.max(0, req-received);
+  return {m, maxLtv, req, received, blendedApy, debtUnits, feeAmt, totalDebt, col, reqCol, colValue, ltv, liqPrice, hf, colBal, insufficient, overCap, overLltv, unfilled};
 }
 /* Most loan token receivable now, given a collateral amount.
    Inverts: debtUnits + originationFee <= collateralValue * LLTV, then prices units off the book.
@@ -1642,40 +1761,42 @@ function fxMaxBorrowForCol(col){
 /* Borrow page (market page) — terms + amounts + live risk in one */
 function fxConfigure(){
   S.txDone=false;
-  const d=fxMath(); const m=d.m; const colBal=m.col==='cbBTC'?2.5:40;
-  const maxRecv=Math.floor(fxMaxBorrowForCol(d.col));
+  const d=fxMath(); const m=d.m; const colBal=d.colBal;
+  const maxRecv=Math.floor(fxMaxOpenBorrow());
+  const canReview = d.req>0 && d.col>0 && !d.insufficient && !d.overCap && d.unfilled<1;
   return `<div class="grid">
     <div class="panel">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${pairBadge(m.col,m.loan)}<div><h4 style="margin:0">${m.col} / ${m.loan}</h4><div class="tag muted tiny">Matures ${m.maturity} (${m.days} days) · <a class="extlink" href="${m.oracleUrl}" target="_blank" rel="noopener noreferrer">${m.oracle} ↗</a> · LLTV ${pct(m.lltv,0)}</div></div></div>
       <div class="field">
-        <label>Collateral<span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
-        <div class="inp"><input id="fcIn" type="text" inputmode="decimal" value="${d.col||''}" placeholder="0.00" oninput="fxCol(this.value)"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="fxCol(${colBal})">MAX</button></div>
-        ${usdSub('fcIn',m.col,d.col)}
-      </div>
-      <div class="field" style="margin-bottom:6px">
-        <label>Borrow${d.col?`<span class="bal">Max: <b>${money(maxRecv,0)} ${m.loan}</b></span>`:''}</label>
-        <div class="inp"><input id="fbIn" type="text" inputmode="decimal" value="${S.form.reqBorrow||''}" placeholder="0.00" oninput="fxBorrow(this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="fxBorrow(${maxRecv})">MAX</button>`:''}</div>
+        <label>Borrow<span class="bal">Max: <b>${money(maxRecv,0)} ${m.loan}</b></span></label>
+        <div class="inp"><input id="fbIn" type="text" inputmode="decimal" value="${S.form.reqBorrow||''}" placeholder="0.00" oninput="fxBorrow(this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="fxBorrow(${maxRecv})">MAX</button></div>
         ${usdSub('fbIn',m.loan,S.form.reqBorrow||0)}
       </div>
-      ${bp('Size the borrow','Requested loan amount maps to debt units via the current book price. Larger sizes fill deeper (worse) bids, so the blended APY rises with size — quote before committing.',
-        `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\nq.debtUnits, q.blendedApy, q.fallbackLiquidity`)}
+      <div class="field">
+        <label><span class="lbl">Collateral<button class="fx-ltvbtn" onclick="openLtvModal()" title="Set max LTV to open">${pct(d.maxLtv,0)} LTV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span><span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
+        <div class="inp"><input id="fcIn" type="text" inputmode="decimal" value="${S.form.col!=null?S.form.col:''}" placeholder="0.00" oninput="fxCol(this.value)"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="fxCol(${colBal})">MAX</button></div>
+        ${usdSub('fcIn',m.col,d.col)}
+        ${d.insufficient?`<div class="warnrow" style="margin-top:10px">⚠ Needs ${money(d.col,4)} ${m.col} — you hold ${money(colBal,3)}. Borrow less or add collateral.</div>`:d.overLltv?`<div class="warnrow" style="margin-top:10px">⚠ LTV ${pct(d.ltv,1)} exceeds the liquidation LTV (${pct(m.lltv,0)}) — the position would be liquidated. Add collateral or borrow less.</div>`:d.overCap?`<div class="warnrow" style="margin-top:10px">⚠ LTV ${pct(d.ltv,1)} exceeds your max LTV (${pct(d.maxLtv,0)}) — add collateral or borrow less.</div>`:''}
+      </div>
+      <div class="fx-rate">
+        <div class="r"><div class="l">Fixed rate</div><div class="v" id="fxRate">${d.req?pct(d.blendedApy):'—'}</div></div>
+        <div class="q"><span class="spin"></span> live · re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</div>
+      </div>
+      ${bp('Size the borrow','The user picks the loan amount; the router quotes it against the live bid book (larger sizes fill deeper, worse bids) and returns debt units + blended APY. Collateral is derived from the integrator max-open LTV.',
+        `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="cm">// collateral = q.totalDebt / maxOpenLtv</span>`)}
     </div>
     <div class="panel">
       ${healthBar(d.hf)}
       <div class="rows" style="margin-top:14px">
         ${R('Receive now', d.received?money(d.received,0)+' '+m.loan:'—','pos')}
-        ${R('Fixed APY', d.debtUnits?pct(d.blendedApy):'—')}
         ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), d.feeAmt?'+'+money(d.feeAmt,2)+' '+m.loan:'—')}
-        ${R('Loan at maturity '+tipWarn(MATURITY_TIP), d.totalDebt?money(d.totalDebt,2)+' '+m.loan:'—')}
-        ${R('Maturity date', m.maturity)}
-        ${R('LTV', d.debtUnits?pct(d.ltv,1)+' / '+pct(m.lltv,0):'—', liqCls(d.ltv,m.lltv))}
-        ${R('Liquidation price', d.liqPrice?usd(d.liqPrice)+' per '+m.col:'—',liqCls(d.ltv,m.lltv))}
-        ${d.unfilled>0?R('⚠ Book slippage', 'Only '+money(d.filled,0)+' fillable','warn'):''}
+        ${R('Loan at maturity '+tipWarn(FX_EXIT_TIP), d.totalDebt?money(d.totalDebt,2)+' '+m.loan:'—')}
+        ${R('Maturity date '+tipWarn(FX_MATURITY_TIP), m.maturity)}
+        ${R('LTV '+tip(MAX_LTV_TIP), d.req?pct(d.ltv,1)+' / '+pct(m.lltv,0)+' liq':'—')}
+        ${d.unfilled>1?R('⚠ Book slippage', 'Order exceeds available bids','warn'):''}
       </div>
-      ${d.ltv>m.lltv?`<div class="warnrow" style="margin-top:12px">⚠ Exceeds max LTV — add collateral or borrow less</div>`:''}
-      <div class="hint">💡 Rate is fixed to maturity, but collateral can still be liquidated before then if ${m.col} drops.</div>
       <div class="divline"></div>
-      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${(!d.debtUnits||!d.col||d.ltv>m.lltv)?'disabled':''} onclick="next()">Review borrow</button></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${canReview?'':'disabled'} onclick="next()">Review borrow</button></div>
       <div class="pbm-foot">${poweredBy()}</div>
     </div>
   </div>`;
@@ -1687,12 +1808,37 @@ function fxSetBorrow(req){
   S.form.units=Math.round(req/price); // fee is added to debt, not deducted from proceeds
 }
 function fxBorrow(v){
-  fxSetBorrow(parseFloat((''+v).replace(/,/g,''))||0);
+  S.form.reqBorrow=Math.max(0, parseFloat((''+v).replace(/,/g,''))||0);
+  S.form.col=null;                                  // re-infer collateral for the new size…
+  const need=Math.round(fxMath().reqCol*1e4)/1e4;
+  S.form.col=Math.min(need, fxColBal(MARKETS_F[S.sel]));  // …pin at the cap, but never beyond the wallet balance
   render(); const el=document.getElementById('fbIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
 }
 function fxCol(v){
-  S.form.col=parseFloat((''+v).replace(/,/g,''))||0;
+  S.form.col=Math.max(0, parseFloat((''+v).replace(/,/g,''))||0);
   render(); const el=document.getElementById('fcIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
+}
+/* Max LTV to open — editable via modal; re-sizes the required collateral. */
+function fxSetLtv(v){
+  const m=MARKETS_F[S.sel];
+  S.form.maxLtv=clamp(Math.round(parseFloat(v)||MAX_OPEN_LTV), 10, m.lltv-1);
+  S.form.col=null; S.form.col=Math.round(fxMath().reqCol*1e4)/1e4;   // re-size collateral to the new cap
+  const lab=document.getElementById('ltvVal'); if(lab) lab.textContent=S.form.maxLtv+'%';
+}
+function applyLtv(){ closeModal(); render(); }
+function openLtvModal(){
+  const m=MARKETS_F[S.sel]; const cur=S.form.maxLtv||MAX_OPEN_LTV;
+  modal('Max LTV to open', `
+    <p class="muted" style="font-size:12.5px;line-height:1.55;margin:0 0 16px">${MAX_LTV_TIP}</p>
+    <div class="ltv-set">
+      <input id="ltvRange" type="range" min="10" max="${m.lltv-1}" value="${cur}" oninput="fxSetLtv(this.value)">
+      <div class="ltv-read"><span id="ltvVal">${cur}%</span><span class="muted tiny">max to open · ${pct(m.lltv,0)} liquidation LTV</span></div>
+    </div>
+    <div class="hint" style="margin-top:14px">⚠ Repay before ${m.maturity} or the position is liquidated. Recommended: warn users ~7 days before maturity.</div>
+    <div class="hint">💡 The rate is fixed until maturity and interest is charged up front; exiting early still pays the full accrued interest.</div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="applyLtv()">Apply</button>
+  `);
 }
 
 function fxExecute(){
@@ -1719,7 +1865,7 @@ function fxExecute(){
   return `<div class="panel" style="max-width:520px;margin:0 auto">
     <h4>Confirm fixed borrow</h4>
     <div class="quote-timer" id="qtimer">
-      <span class="ring"><span class="spin" style="width:13px;height:13px;border-width:2px"></span> Rate locked for <b id="qsecs">24</b>s</span>
+      <span class="ring"><span class="spin" style="width:13px;height:13px;border-width:2px"></span> live · re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</span>
       <span class="refresh">fixed ${pct(d.blendedApy)} APY</span>
     </div>
     <div class="bundle" id="bundle">
@@ -2013,19 +2159,28 @@ function toast(msg, type='ok'){
 /* -------------------- quote countdown for fixed execute -------------------- */
 const _origFixed=fixedScreen;
 // start timer after render when on fixed execute
-function startQuoteTimer(){
-  clearTimers();
-  let s=24;
+// Live fixed-rate quote: a countdown that re-quotes the book on each tick.
+// On refresh it applies a small market drift so the rate visibly ticks even when
+// the amount is unchanged. Full re-render is skipped while the user is typing the amount.
+function startFxQuote(){
+  if(S.quoteTimer) return;                 // already running — survive re-renders
+  if(S.fxSecs==null) S.fxSecs=15;
   S.quoteTimer=setInterval(()=>{
-    const el=document.getElementById('qsecs'); if(!el){clearTimers();return;}
-    s--; if(s<=0){ s=24; toast('Quote refreshed','info'); }
-    el.textContent=s;
+    if(S.product!=='fixed' || S.txDone || !document.getElementById('qsecs')){ clearTimers(); return; }
+    S.fxSecs--;
+    if(S.fxSecs<=0){
+      S.fxSecs=15;
+      S.fxDrift = clamp((S.fxDrift||0) + (Math.random()-0.45)*0.06, -0.15, 0.2); // subtle market drift
+      const typing = document.activeElement===document.getElementById('fbIn');
+      if(!typing){ toast('Quote refreshed','info'); render(); return; }            // re-quote everything
+    }
+    const s=document.getElementById('qsecs'); if(s) s.textContent=S.fxSecs;
   },1000);
 }
 
-// hook render to manage timers
+// hook render to manage the live quote on the fixed config (1) and execute (2) steps
 const _render=render;
-render=function(){ _render(); if(S.product==='fixed'&&S.step===2&&!S.txDone){ startQuoteTimer(); } };
+render=function(){ _render(); if(S.product==='fixed' && (S.step===1||S.step===2) && !S.txDone){ startFxQuote(); } };
 
 /* -------------------- THEME (light / dark) -------------------- */
 const SUN_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
