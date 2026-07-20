@@ -420,6 +420,39 @@ b,strong{font-weight:400}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1150px){.cards{grid-template-columns:repeat(2,1fr)}.card.dash{min-height:auto}}
 @media(max-width:900px){.cards{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+/* Genius Mode — annotated walkthrough rail */
+:root{--rail-w:380px}
+body.genius{padding-right:var(--rail-w)}
+body.genius .modal-bg{right:var(--rail-w)}
+body.genius .toast-wrap{left:calc(50% - var(--rail-w)/2)}
+.genius-rail{position:fixed;top:0;right:0;width:var(--rail-w);height:100vh;overflow-y:auto;background:var(--bg2);border-left:1px solid var(--border);z-index:45;padding:20px 18px 40px;font-family:var(--font)}
+body:not(.genius) .genius-rail{display:none}
+.g-top{margin-bottom:13px}
+.g-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent2);background:var(--accent-soft);border:1px solid var(--border);border-radius:999px;padding:5px 11px}
+.g-ctx{font-size:13px;color:var(--text);margin:0 2px 14px}
+.g-cards{display:flex;flex-direction:column;gap:10px}
+.g-card{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--panel);overflow:hidden;transition:.14s}
+.g-card:hover{border-color:var(--border2)}
+.g-head{display:flex;align-items:center;gap:9px;padding:11px 12px;cursor:pointer}
+.g-src{font-size:9px;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:5px;flex-shrink:0;white-space:nowrap}
+.g-src.s-API{color:var(--green);background:var(--green-soft)}
+.g-src.s-SDK{color:var(--accent2);background:var(--accent-soft)}
+.g-src.s-onchain{color:var(--amber);background:var(--amber-soft)}
+.g-src.s-offchain{color:var(--muted);background:var(--surface-soft)}
+.g-title{flex:1;font-size:12.5px;color:var(--text);min-width:0}
+.g-chev{color:var(--muted2);font-size:11px;transition:.2s;flex-shrink:0}
+.g-card.open .g-chev{transform:rotate(180deg)}
+.g-body{display:none;padding:0 12px 12px}
+.g-card.open .g-body{display:block}
+.g-body p{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 10px}
+.g-empty{font-size:12.5px;color:var(--muted2);padding:22px 4px}
+.g-foot{font-size:11px;color:var(--muted2);margin-top:16px;line-height:1.5;padding:0 2px}
+.genius-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);background:var(--panel);padding:6px 12px;border-radius:999px;transition:.15s}
+.genius-toggle:hover{color:var(--text);border-color:var(--border2)}
+.genius-toggle.on{color:var(--accent2);border-color:var(--accent2);background:var(--accent-soft)}
+.genius-halo{outline:2px solid var(--accent2)!important;outline-offset:3px;border-radius:9px}
+@media(max-width:1023px){body.genius{padding-right:0}body.genius .modal-bg{right:0}body.genius .toast-wrap{left:50%}.genius-rail{display:none!important}#geniusToggle{display:none!important}}
+
 /* Fixed-rate: inferred collateral box + prominent live rate */
 .fx-coll{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:12px 14px}
 .fx-coll-id{display:flex;align-items:center;gap:9px;min-width:0}
@@ -493,6 +526,7 @@ b,strong{font-weight:400}
   </div>
   <div id="root"></div>
 </div>
+<aside id="genius-rail" class="genius-rail" aria-label="Genius Mode"></aside>
 <div id="modal-root"></div>
 <div class="toast-wrap" id="toasts"></div>
 
@@ -521,6 +555,8 @@ const S = {
   dash:{earn:[],variable:[],fixed:[]},   // edge case sandbox
   dashKind:null,     // which detail view the sandbox is showing
   theme:'dark',      // 'dark' | 'light' — in-memory only (no storage APIs)
+  genius:false,      // Genius Mode rail on/off (session)
+  geniusExpanded:null, // pinned card target selector
 };
 
 /* --- market/vault accessors --- */
@@ -929,14 +965,12 @@ function shell(inner){
 }
 
 /* -------------------- Blueprint annotation component -------------------- */
-function bp(title, desc, code){
-  return `<div class="bp">
-    <div class="bp-head" onclick="this.parentElement.classList.toggle('open')">
-      <div class="t"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg> Blueprint · ${title}</div>
-      <span class="chev">▾</span>
-    </div>
-    <div class="bp-body"><p>${desc}</p><div class="code">${code}</div></div>
-  </div>`;
+// Blueprint content is now collected per render and shown in the Genius Mode rail
+// (single source of truth — no inline panel). Signature: (target, source, title, desc, code).
+let GENIUS = { items: [], screenLen: 0, view: null };
+function bp(target, source, title, desc, code){
+  GENIUS.items.push({ target: target||null, source: source||'SDK', title, desc, code });
+  return '';
 }
 
 /* legal footer — shown on the first (initial) deposit/borrow confirmation */
@@ -1052,7 +1086,7 @@ function earnScreen(){
 }
 function earnSelect(){
   return `${Portfolio('earn')}
-    ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
+    ${bp('.pf-opps','API','Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
       `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}`;
 }
 
@@ -1083,7 +1117,7 @@ function earnConfigure(){
       </div>`:''}
 
       ${v.warn?`<div class="warnrow" style="margin-top:12px">⚠ ${v.warn}</div>`:''}
-      ${bp('Read vault + preview','Read live share price and APY; convert the entered amount to shares with previewDeposit, which returns exactly what the deposit will mint.',
+      ${bp('.vstats','SDK','Read vault + preview','Read live share price and APY; convert the entered amount to shares with previewDeposit, which returns exactly what the deposit will mint.',
         `<span class="kw">const</span> s = <span class="kw">await</span> vault.<span class="fn">getState</span>();\n<span class="kw">const</span> shares = <span class="kw">await</span> vault.<span class="fn">previewDeposit</span>(assets);`)}
     </div>
     <div class="panel">
@@ -1139,7 +1173,7 @@ function earnExecute(){
     <button class="btn" id="signBtn" onclick="earnSign()">Sign & deposit</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('Bundle approve + deposit','Permit2 collapses the ERC-20 approval and ERC-4626 deposit into one signed multicall.',
+    ${bp('#bundle','on-chain','Bundle approve + deposit','Permit2 collapses the ERC-20 approval and ERC-4626 deposit into one signed multicall.',
       `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
   </div>`;
 }
@@ -1226,7 +1260,7 @@ function earnDetail(){
         <div class="rows">${R('Claimable', usd(rewardsClaimable()),'pos')}${R('Source','Merkl')}</div>
         <div class="spacer"></div>
         <button class="btn ghost sm" onclick="openRewards()">Claim rewards</button>
-        ${bp('Monitor position','Poll share price × share balance for live value. Rewards accrue off-chain (Merkl) and are claimed separately.',
+        ${bp('.rows','SDK','Monitor position','Poll share price × share balance for live value. Rewards accrue off-chain (Merkl) and are claimed separately.',
           `<span class="kw">const</span> value = <span class="kw">await</span> vault.<span class="fn">convertToAssets</span>(<span class="kw">await</span> vault.<span class="fn">balanceOf</span>(user));`)}
       </div>
     </div>
@@ -1270,7 +1304,7 @@ function openWithdraw(){
     <div id="simWarn"></div>
     <div class="rows" id="simRows">${earnSimRows(earnSim())}</div>
     <div id="simWarn"></div>
-    ${bp('Withdraw','Exact-amount exit calls withdraw(assets); full exit calls redeem(shares) off the share balance to avoid leaving dust. The end user only ever sees "amount" and "Max".',
+    ${bp('#modal-root .inp','on-chain','Withdraw','Exact-amount exit calls withdraw(assets); full exit calls redeem(shares) off the share balance to avoid leaving dust. The end user only ever sees "amount" and "Max".',
       `<span class="cm">// partial</span> vault.<span class="fn">withdraw</span>(assets, receiver, owner)\n<span class="cm">// full (Max)</span> vault.<span class="fn">redeem</span>(shares, receiver, owner)`)}
     <div class="spacer"></div>
     <button class="btn" id="simBtn" onclick="doWithdraw()">Confirm</button>`);
@@ -1306,7 +1340,7 @@ function openTopup(){
     <div class="field"><label>Deposit<span class="bal">Balance: <b>${money(bal,0)} ${v.asset}</b></span></label>
       <div class="inp"><input id="tIn" type="text" inputmode="decimal" placeholder="0.00" oninput="earnTPrev()"><button class="assetbtn">${tokBadge(v.asset,true)} ${v.asset}</button><button class="maxbtn" onclick="setVal('tIn','${bal}')">MAX</button></div>${usdSub('tIn',v.asset)}</div>
     <div class="rows" id="simRows">${earnSimRows(earnSim())}</div>
-    ${bp('Deposit','Same bundled path as the initial supply: the Permit2 approval and the ERC-4626 deposit are collapsed into one signed multicall.',
+    ${bp('#modal-root .inp','on-chain','Deposit','Same bundled path as the initial supply: the Permit2 approval and the ERC-4626 deposit are collapsed into one signed multicall.',
       `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doTopup()">Confirm</button>`);
   earnTPrev();
@@ -1325,7 +1359,7 @@ function openRewards(){
   modal('Claim rewards', `
     <div class="rows">${R('Claimable', usd(c),'pos')}${R('Source','Merkl distribution')}${R('Token','MORPHO + partner')}</div>
     <div class="hint">💡 Rewards live outside the vault. Discover the claim, build the Merkl tx, confirm receipt — a flow independent of deposit/withdraw.</div>
-    ${bp('Claim rewards','Rewards accrue off-chain and are claimed against a Merkl distributor with a Merkle proof.',
+    ${bp('#modal-root .modal-body','off-chain','Claim rewards','Rewards accrue off-chain and are claimed against a Merkl distributor with a Merkle proof.',
       `<span class="kw">const</span> claims = <span class="kw">await</span> merkl.<span class="fn">getClaims</span>(user);\n<span class="kw">await</span> distributor.<span class="fn">claim</span>(tokens, amounts, proofs);`)}
     <div class="spacer"></div><button class="btn" onclick="doClaim(${c})">Claim ${usd(c)}</button>`);
 }
@@ -1344,7 +1378,7 @@ function variableScreen(){
 }
 function varSelect(){
   return `${Portfolio('borrow')}
-    ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
+    ${bp('.pf-opps','API','Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
       `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}`;
 }
 function selMkt(i){ S.sel=i; render(); }
@@ -1389,7 +1423,7 @@ function varConfigure(){
         <div class="inp"><input id="borIn" type="text" inputmode="decimal" value="${d.borrow||''}" placeholder="0.00" oninput="varSet('borrow',this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="varSet('borrow',${Math.floor(d.maxBorrow)})">MAX</button>`:''}</div>
         ${usdSub('borIn',m.loan,d.borrow)}
       </div>
-      ${bp('Live risk math','Recompute LTV / health / liquidation price on every keystroke — pure math on market params, no tx. A borrow is bounded by the collateral posted and by the loan assets the market can still supply; take the lower of the two.',
+      ${bp('.health','off-chain','Live risk math','Recompute LTV / health / liquidation price on every keystroke — pure math on market params, no tx. A borrow is bounded by the collateral posted and by the loan assets the market can still supply; take the lower of the two.',
         `maxBorrow = min(\n  collateralValue * lltv,      <span class="cm">// LLTV bound</span>\n  market.totalSupply - market.totalBorrow  <span class="cm">// liquidity bound</span>\n)`)}
     </div>
     <div class="panel">
@@ -1451,7 +1485,7 @@ function varExecute(){
     <button class="btn" id="signBtn" onclick="varSign()">Sign & borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('Bundle supply + borrow','The bundler chains the hidden collateral permit, supplyCollateral and borrow so all land atomically in one signed tx.',
+    ${bp('#bundle','on-chain','Bundle supply + borrow','The bundler chains the hidden collateral permit, supplyCollateral and borrow so all land atomically in one signed tx.',
       `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
   </div>`;
 }
@@ -1527,7 +1561,7 @@ function varDetail(){
         <div class="manage-actions" style="grid-template-columns:1fr">
           <div class="maction" onclick="closeVarPosition()"><div class="mt"><span class="mi">✓</span> Repay all & withdraw</div><div class="md">Clears the debt and returns every ${m.col}</div></div>
         </div>
-        ${bp('Monitor & manage','Health, LTV and liquidation price are recomputed on every poll. Full repay reads borrowShares and repays by shares to avoid leaving dust debt.',
+        ${bp('.rows','SDK','Monitor & manage','Health, LTV and liquidation price are recomputed on every poll. Full repay reads borrowShares and repays by shares to avoid leaving dust debt.',
           `<span class="kw">const</span> pos = <span class="kw">await</span> <span class="fn">getPosition</span>(marketId, user);\npos.<span class="fn">borrowShares</span>, pos.collateral\n<span class="cm">// full repay:</span> <span class="fn">repay</span>({ shares: pos.borrowShares })`)}
       </div>
     </div>
@@ -1605,7 +1639,7 @@ function openRepay(){
       <div class="inp"><input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="repayPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('wIn',varMaxWithdraw(val('rIn')).toFixed(4))">MAX</button></div>${usdSub('wIn',m.col)}</div>
     <div class="rows" id="simRows">${varSimRows(varSim())}</div>
     <div id="simWarn"></div>
-    ${bp('Repay + withdraw bundle','Bundled so debt reduction and collateral release land atomically. Repaying the full balance reads borrowShares and repays by shares, avoiding dust.',
+    ${bp('#modal-root .inp','on-chain','Repay + withdraw bundle','Bundled so debt reduction and collateral release land atomically. Repaying the full balance reads borrowShares and repays by shares, avoiding dust.',
       `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">repay</span>(market, assets <span class="cm">/* or shares if max */</span>, user),\n  <span class="fn">withdrawCollateral</span>(market, colAmt, user, user),\n]);`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doRepay()">Confirm</button>`);
   repayPrev();
@@ -1648,7 +1682,7 @@ function openAddCol(){
     <div class="rows" id="simRows">${varSimRows(varSim())}</div>
     <div id="simWarn"></div>
     <div class="hint">💡 Adding collateral alone improves your buffer — the rate and existing debt don't change.</div>
-    ${bp('Supply collateral + borrow','Bundled so both land atomically. Borrowing more re-checks health against the new collateral before the tx is sent.',
+    ${bp('#modal-root .inp','on-chain','Supply collateral + borrow','Bundled so both land atomically. Borrowing more re-checks health against the new collateral before the tx is sent.',
       `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doAddCol()">Confirm</button>`);
   addColPrev();
@@ -1692,7 +1726,7 @@ function fixedScreen(){
 }
 function fxSelect(){
   return `${Portfolio('borrow')}
-    ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
+    ${bp('.pf-opps','API','Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
       `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}`;
 }
 /* fixed math: walk the bid book */
@@ -1782,7 +1816,7 @@ function fxConfigure(){
         <div class="r"><div class="l">Fixed rate</div><div class="v" id="fxRate">${d.req?pct(d.blendedApy):'—'}</div></div>
         <div class="q"><span class="spin"></span> live · re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</div>
       </div>
-      ${bp('Size the borrow','The user picks the loan amount; the router quotes it against the live bid book (larger sizes fill deeper, worse bids) and returns debt units + blended APY. Collateral is derived from the integrator max-open LTV.',
+      ${bp('.fx-rate','SDK','Size the borrow','The user picks the loan amount; the router quotes it against the live bid book (larger sizes fill deeper, worse bids) and returns debt units + blended APY. Collateral is derived from the integrator max-open LTV.',
         `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="cm">// collateral = q.totalDebt / maxOpenLtv</span>`)}
     </div>
     <div class="panel">
@@ -1886,7 +1920,7 @@ function fxExecute(){
     <button class="btn" id="signBtn" onclick="fxSign()">Sign & borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('Bundle supply + take bids','The router auto-fetches executable bids for your size; MidnightBundles wraps the hidden permit, supplyCollateral and takeBids into one atomic signed action.',
+    ${bp('#bundle','on-chain','Bundle supply + take bids','The router auto-fetches executable bids for your size; MidnightBundles wraps the hidden permit, supplyCollateral and takeBids into one atomic signed action.',
       `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
   </div>`;
 }
@@ -1977,7 +2011,7 @@ function fxDetail(){
           <div class="maction" onclick="fxClosePosition()"><div class="mt"><span class="mi">✓</span> Repay all & withdraw</div><div class="md">Clears the debt and returns every ${m.col}</div></div>
           <div class="maction" onclick="openExitInfo()"><div class="mt"><span class="mi">ℹ</span> Exit options</div><div class="md">How closing works</div></div>
         </div>
-        ${bp('Monitor & exit','Read outstanding debt + collateral. Debt is repaid at par at any time — the full fixed interest is owed for the whole term, so there is no early-repayment discount.',
+        ${bp('.rows','SDK','Monitor & exit','Read outstanding debt + collateral. Debt is repaid at par at any time — the full fixed interest is owed for the whole term, so there is no early-repayment discount.',
           `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\npos.debtUnits, pos.collateral, pos.maturity\n<span class="fn">repay</span>(market, amount) <span class="cm">// 1:1, any time</span>`)}
       </div>
     </div>
@@ -2056,7 +2090,7 @@ function openFxRepay(){
       <div class="inp"><input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxRepayPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('wIn',fxMaxWithdraw(val('rIn')).toFixed(4))">MAX</button></div>${usdSub('wIn',m.col)}</div>
     <div class="rows" id="simRows">${fxSimRows(fxSim())}</div>
     <div id="simWarn"></div>
-    ${bp('Repay + withdraw','Interest does not accrue over time and there is no secondary market, so debt is always repaid at par. Bundle repay and withdrawCollateral so settlement and collateral release are atomic.',
+    ${bp('#modal-root .inp','on-chain','Repay + withdraw','Interest does not accrue over time and there is no secondary market, so debt is always repaid at par. Bundle repay and withdrawCollateral so settlement and collateral release are atomic.',
       `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\n<span class="kw">await</span> midnight.<span class="fn">bundle</span>([\n  <span class="fn">repay</span>(market, amount), <span class="cm">// 1:1 against debt</span>\n  <span class="fn">withdrawCollateral</span>(market, colAmt),\n]);`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxRepay()">Confirm</button>`);
   fxRepayPrev();
@@ -2091,7 +2125,7 @@ function openAddColFixed(){
     <div class="rows" id="simRows">${fxSimRows(fxSim())}</div>
     <div id="simWarn"></div>
     <div class="hint">💡 Adding collateral alone improves your buffer — rate and debt don't change. Borrowing more sells additional debt units into the book at the current rate, due on the same maturity date.</div>
-    ${bp('Supply collateral + take bids','Bundled atomically. New borrow is quoted against the live book for the remaining term, so it settles on the existing maturity date.',
+    ${bp('#modal-root .inp','on-chain','Supply collateral + take bids','Bundled atomically. New borrow is quoted against the live book for the remaining term, so it settles on the existing maturity date.',
       `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxAdd()">Confirm</button>`);
   fxAddPrev();
@@ -2148,8 +2182,14 @@ function modal(title, body){
         <div class="modal-body">${body}</div>
       </div>
     </div>`;
+  // rail follows the modal: show only the blueprint items collected while building this modal body
+  if(S.genius){ S.geniusExpanded=null; renderGeniusRail(GENIUS.items.slice(GENIUS.screenLen), title); }
 }
-function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+function closeModal(){
+  document.getElementById('modal-root').innerHTML='';
+  GENIUS.items.length=GENIUS.screenLen;                 // drop modal items
+  if(S.genius){ S.geniusExpanded=null; renderGeniusRail(GENIUS.items.slice(), geniusContext()); }
+}
 function toast(msg, type='ok'){
   const w=document.getElementById('toasts');
   const el=document.createElement('div'); el.className='toast '+type; el.innerHTML=`<span class="dot"></span>${msg}`;
@@ -2180,7 +2220,15 @@ function startFxQuote(){
 
 // hook render to manage the live quote on the fixed config (1) and execute (2) steps
 const _render=render;
-render=function(){ _render(); if(S.product==='fixed' && (S.step===1||S.step===2) && !S.txDone){ startFxQuote(); } };
+render=function(){
+  GENIUS.items=[];
+  _render();                                  // screen render populates GENIUS.items via bp()
+  GENIUS.screenLen=GENIUS.items.length;
+  if(S.product==='fixed' && (S.step===1||S.step===2) && !S.txDone){ startFxQuote(); }
+  // clear a pinned halo whose card is no longer on screen (navigated away)
+  if(S.geniusExpanded && !GENIUS.items.some(it=>it.target===S.geniusExpanded)) S.geniusExpanded=null;
+  renderGeniusRail(GENIUS.items.slice(), geniusContext());
+};
 
 /* -------------------- THEME (light / dark) -------------------- */
 const SUN_SVG  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -2193,11 +2241,68 @@ function applyTheme(){
 function toggleTheme(){ S.theme = S.theme==='light' ? 'dark' : 'light'; applyTheme(); }
 function mountTopbar(){
   document.getElementById('topbar-right').innerHTML =
+    `<button id="geniusToggle" class="genius-toggle" onclick="geniusToggleMode()" title="Genius Mode — annotated walkthrough of the integration">${GENIUS_ICO} Genius Mode</button>`+
     `<button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light / dark theme" title="Toggle light / dark">${themeIcon()}</button>`;
 }
+
+/* -------------------- GENIUS MODE (annotated walkthrough) -------------------- */
+const GENIUS_ICO = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.7L18.5 9l-4.6 1.3L12 15l-1.9-4.7L5.5 9l4.6-1.3z"/><path d="M19 15l.8 2 .2.8.8.2 2 .8-2 .8-.8.2-.2.8-.8 2-.8-2-.2-.8-.8-.2-2-.8 2-.8.8-.2.2-.8z"/></svg>';
+function geniusContext(){
+  if(S.route==='home') return 'Home · Integration blueprints';
+  const p=PRODUCTS[S.product]; if(!p) return 'Overview';
+  if(S.detail||S.dashKind) return p.name+' · Manage position';
+  const step=(p.steps&&p.steps[S.step])||'';
+  return (step?step+' · ':'')+p.tag;
+}
+function applyGeniusBody(){
+  document.body.classList.toggle('genius', !!S.genius);
+  const b=document.getElementById('geniusToggle'); if(b) b.classList.toggle('on', !!S.genius);
+}
+function geniusToggleMode(){ S.genius=!S.genius; S.geniusExpanded=null; applyGeniusBody(); render(); }
+function geniusCard(it){
+  const open = it.target && it.target===S.geniusExpanded;
+  const t = it.target||'';
+  const cls = 's-'+it.source.replace(/[^a-z0-9]/gi,'');
+  return `<div class="g-card ${open?'open':''}" data-t="${t}"${t?` onmouseenter="geniusHover('${t}',1)" onmouseleave="geniusHover('${t}',0)"`:''}>
+    <div class="g-head" onclick="geniusExpand('${t}')">
+      <span class="g-src ${cls}">${it.source}</span>
+      <span class="g-title">${it.title}</span>
+      <span class="g-chev">▾</span>
+    </div>
+    <div class="g-body"><p>${it.desc}</p><div class="code">${it.code}</div></div>
+  </div>`;
+}
+function renderGeniusRail(items, ctx){
+  GENIUS.view = { items, ctx };
+  const rail=document.getElementById('genius-rail'); if(!rail) return;
+  if(!S.genius){ rail.innerHTML=''; return; }
+  const cards = items.length ? items.map(geniusCard).join('') : `<div class="g-empty">No blueprint calls for this view.</div>`;
+  rail.innerHTML = `<div class="g-top"><span class="g-badge">${GENIUS_ICO} Genius Mode</span></div>
+    <div class="g-ctx">${ctx}</div>
+    <div class="g-cards">${cards}</div>
+    <div class="g-foot">Hover a card to preview the element it feeds; expand to pin the highlight.</div>`;
+  applyGeniusHalo();
+}
+function geniusHover(target, on){
+  if(!S.genius || !target) return;
+  const el=document.querySelector(target); if(!el) return;
+  if(on) el.classList.add('genius-halo');
+  else if(target!==S.geniusExpanded) el.classList.remove('genius-halo');
+}
+function geniusExpand(target){
+  if(!target) return;
+  S.geniusExpanded = (S.geniusExpanded===target) ? null : target;
+  if(GENIUS.view) renderGeniusRail(GENIUS.view.items, GENIUS.view.ctx);
+}
+function applyGeniusHalo(){
+  document.querySelectorAll('.genius-halo').forEach(el=>el.classList.remove('genius-halo'));
+  if(S.genius && S.geniusExpanded){ const el=document.querySelector(S.geniusExpanded); if(el) el.classList.add('genius-halo'); }
+}
+
 if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){ S.theme='light'; }
 applyTheme();
 mountTopbar();
+applyGeniusBody();
 
 /* -------------------- INIT -------------------- */
 render();
