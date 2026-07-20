@@ -135,6 +135,12 @@ b,strong{font-weight:400}
 .home-note{margin-top:26px;border:1px dashed var(--border2);border-radius:var(--radius);padding:16px 18px;background:var(--tint);font-size:12.8px;color:var(--muted);display:flex;gap:12px;align-items:flex-start}
 .home-note b{color:var(--text)}
 .home-note .k{color:var(--accent2)}
+.genius-note{cursor:pointer;transition:.15s;align-items:center}
+.genius-note:hover{border-color:var(--accent2);background:var(--accent-soft)}
+.genius-note>span{color:var(--accent2);display:flex;align-items:center;flex-shrink:0}
+.genius-note>span svg{width:16px;height:16px}
+.genius-note .k svg{width:12px;height:12px;vertical-align:-1px}
+.genius-toggle.lit{color:var(--accent2);border-color:var(--accent2);background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-soft)}
 
 /* Flow shell */
 .flow-head{display:flex;align-items:center;gap:14px;margin:2px 2px 20px}
@@ -840,9 +846,9 @@ function Home(){
         </div>
       </div>
     </div>
-    <div class="home-note">
-      <span>💡</span>
-      <div><b>How to read this.</b> Every screen carries a collapsible <span class="k">Blueprint</span> panel showing the call underneath it — <span class="k mono">deposit()</span>, <span class="k mono">supplyCollateral()</span>, <span class="k mono">borrow()</span>, <span class="k mono">repay()</span>. Where the protocol allows it, approvals, quotes and multi-step sequences are bundled into one signature; that is the part most worth carrying into your own integration. Nothing here touches a chain — the numbers are simulated.</div>
+    <div class="home-note genius-note" onmouseenter="geniusHint(1)" onmouseleave="geniusHint(0)" onclick="if(!S.genius)geniusToggleMode()">
+      <span>${GENIUS_ICO}</span>
+      <div><b>Turn on Genius Mode.</b> Use the <span class="k">${GENIUS_ICO} Genius Mode</span> toggle at the top right for a live, annotated walkthrough. A side panel explains where each number on screen comes from and the exact <span class="k mono">SDK</span> / contract call behind it (<span class="k mono">deposit()</span>, <span class="k mono">supplyCollateral()</span>, <span class="k mono">borrow()</span>, <span class="k mono">repay()</span>), and highlights the element it feeds. Nothing here touches a chain; the numbers are simulated.</div>
     </div>
   </div>`;
 }
@@ -2347,6 +2353,8 @@ function applyGeniusHalo(){
   document.querySelectorAll('.genius-halo').forEach(el=>el.classList.remove('genius-halo'));
   if(S.genius && S.geniusExpanded){ const el=document.querySelector(S.geniusExpanded); if(el) el.classList.add('genius-halo'); }
 }
+// landing note hover → light up the Genius Mode toggle
+function geniusHint(on){ const b=document.getElementById('geniusToggle'); if(b) b.classList.toggle('lit', !!on); }
 
 if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){ S.theme='light'; }
 applyTheme();
