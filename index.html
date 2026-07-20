@@ -881,15 +881,15 @@ function dashRemove(){
 }
 
 function dashEarnRow(p,i){
-  const v=p.vault, accrued=earnAccrued(p), value=p.deposited+accrued;
+  const v=p.vault, accrued=earnAccrued(p), value=p.deposited+accrued, px=PRICE_USD[v.asset]||1;
   const capped=vaultAvail(v)<value;
   return `<div class="posrow ${capped?'warn':''}" onclick="dashOpen('earn',${i})">
     <div class="id">${tokBadge(v.asset)}<div><div class="pn">${v.name}</div><div class="ps">Earn</div></div></div>
     <div class="cells">
-      <div class="cell"><div class="l">Position value</div><div class="v">${usd(value)}</div></div>
+      <div class="cell"><div class="l">Position value</div><div class="v">${usd(value*px)}</div></div>
       <div class="cell"><div class="l">APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
-      <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued)}</div></div>
-      ${capped?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v))} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
+      <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued*px)}</div></div>
+      ${capped?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v)*px)} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
     </div>
     <div class="acts" onclick="event.stopPropagation()">
       <button class="btn sm" onclick="dashAct('earn',${i},'openTopup')">Deposit</button>
@@ -1132,7 +1132,7 @@ function earnSelect(){
 /* Deposit page (vault page) — terms + amount + live preview in one */
 function earnConfigure(){
   S.txDone=false;
-  const v=VAULTS[S.sel]; const bal=25000; const amt=S.form.amt||0; const shares=amt/1.0842;
+  const v=VAULTS[S.sel]; const bal=25000; const amt=S.form.amt||0; const shares=amt/1.0842; const px=PRICE_USD[v.asset]||1;
   return `<div class="grid">
     <div class="panel">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:2px">${tokBadge(v.asset,false)}<div><h4 style="margin:0">Earn with ${v.name}</h4><div class="tag muted tiny">Morpho Vault · ${v.chain}</div></div></div>
@@ -1170,9 +1170,9 @@ function earnConfigure(){
         ${usdSub('amtIn',v.asset,amt)}
       </div>
       <div class="rows">
-        ${R('Position value', amt?usd(amt):'—')}
+        ${R('Position value', amt?usd(amt*px):'—')}
         ${R('Net APY (variable)', pct(v.netApy),'pos')}
-        ${R('Est. yield / yr', amt?'+'+usd(amt*v.netApy/100):'—','pos')}
+        ${R('Est. yield / yr', amt?'+'+usd(amt*px*v.netApy/100):'—','pos')}
       </div>
       <div class="divline"></div>
       <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${!amt?'disabled':''} onclick="next()">Review deposit</button></div>
@@ -1183,7 +1183,7 @@ function earnConfigure(){
 function earnAmt(v){ S.form.amt=parseFloat((''+v).replace(/,/g,''))||0; render(); const el=document.getElementById('amtIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);} }
 
 function earnExecute(){
-  const v=VAULTS[S.sel]; const amt=S.form.amt;
+  const v=VAULTS[S.sel]; const amt=S.form.amt; const px=PRICE_USD[v.asset]||1;
   if(S.txDone){
     const p=S.position;
     return `<div class="panel" style="max-width:520px;margin:0 auto">
@@ -1191,7 +1191,7 @@ function earnExecute(){
         <p>${money(p.deposited,2)} ${v.asset} supplied to ${v.name}.</p>
         <div class="txhash mono">0x7a3e…b91f · confirmed</div></div>
       <div class="rows">
-        ${R('Position value', usd(p.deposited))}
+        ${R('Position value', usd(p.deposited*px))}
         ${R('Net APY (variable)', pct(v.netApy),'pos')}
       </div>
       <div class="spacer"></div><button class="btn" onclick="next()">Open dashboard</button>
@@ -1205,7 +1205,7 @@ function earnExecute(){
     </div>
     <div class="rows">
       ${R('Net APY (variable)', pct(v.netApy),'pos')}
-      ${R('Est. yield / yr', '+'+usd(amt*v.netApy/100),'pos')}
+      ${R('Est. yield / yr', '+'+usd(amt*px*v.netApy/100),'pos')}
     </div>
     ${legalFooter()}
     <div class="spacer"></div>
@@ -1219,7 +1219,7 @@ function earnExecute(){
 function earnSign(){
   const btn=document.getElementById('signBtn'); btn.disabled=true; btn.innerHTML='Awaiting signature…';
   runBundle(()=>{
-    const v=VAULTS[S.sel]; const amt=S.form.amt;
+    const v=VAULTS[S.sel]; const amt=S.form.amt; const px=PRICE_USD[v.asset]||1;
     S.position={ vault:v, deposited:amt, shares:amt/1.0842, sharePrice:1.0842, day:0, claimable:0 };
     S.txDone=true; toast('Deposit confirmed'); render();
   });
@@ -1241,6 +1241,7 @@ function earnDashboard(){
   const p=S.position; const v=p.vault;
   const accrued=earnAccrued(p);
   const value=p.deposited+accrued;
+  const px=PRICE_USD[v.asset]||1;
   return `<div class="fade-in">
     <div class="dash-head">
       <div><div class="dash-title">Your positions</div></div>
@@ -1249,10 +1250,10 @@ function earnDashboard(){
       <div class="posrow ${vaultAvail(v)<value?'warn':''}" onclick="openDetail()">
         <div class="id">${tokBadge(v.asset)}<div><div class="pn">${v.name}</div><div class="ps">Earn</div></div></div>
         <div class="cells">
-          <div class="cell"><div class="l">Position value</div><div class="v">${usd(value)}</div></div>
+          <div class="cell"><div class="l">Position value</div><div class="v">${usd(value*px)}</div></div>
           <div class="cell"><div class="l">APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
-          <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued)}</div></div>
-          ${vaultAvail(v)<value?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v))} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
+          <div class="cell"><div class="l">Accrued yield</div><div class="v" style="color:var(--green)">+${usd(accrued*px)}</div></div>
+          ${vaultAvail(v)<value?`<div class="cell"><div class="l">Withdrawable</div><div class="v amber">${usd(vaultAvail(v)*px)} <span class="badge-h mod">Low liquidity</span></div></div>`:''}
         </div>
         <div class="acts" onclick="event.stopPropagation()">
           <button class="btn sm" onclick="openTopup()">Deposit</button>
@@ -1270,6 +1271,7 @@ function earnDetail(){
   const p=S.position; const v=p.vault;
   const accrued=earnAccrued(p);
   const value=p.deposited+accrued;
+  const px=PRICE_USD[v.asset]||1;
   const avail=vaultAvail(v);
   const capped=avail<value;   // the vault cannot pay out the full position right now
   return `<div class="fade-in">
@@ -1280,14 +1282,14 @@ function earnDetail(){
     <div class="grid">
       <div class="panel">
         <div class="rows">
-          ${Rbig('Position value', usd(value),'')}
+          ${Rbig('Position value', usd(value*px),'')}
           ${R('Net APY (variable)', apyHover(v),'pos')}
-          ${R('Accrued yield', '+'+usd(accrued),'pos')}
-          ${R('Est. yield / yr', '+'+usd(value*v.netApy/100),'pos')}
-          ${R('Cost basis', usd(p.deposited))}
-          ${R('Withdrawable now '+(capped?tip(VAULT_LIQ_TIP):''), usd(Math.min(value,avail)), capped?'warn':'')}
+          ${R('Accrued yield', '+'+usd(accrued*px),'pos')}
+          ${R('Est. yield / yr', '+'+usd(value*px*v.netApy/100),'pos')}
+          ${R('Cost basis', usd(p.deposited*px))}
+          ${R('Withdrawable now '+(capped?tip(VAULT_LIQ_TIP):''), usd(Math.min(value,avail)*px), capped?'warn':'')}
         </div>
-        ${capped?`<div class="warnrow" style="margin-top:14px;align-items:flex-start">⚠ <span><b>Only ${usd(avail)} of your ${usd(value)} can be withdrawn right now.</b> Most of this vault is lent out to borrowers. The rest becomes available as they repay, or when an allocator pulls liquidity back from its markets.</span></div>`:''}
+        ${capped?`<div class="warnrow" style="margin-top:14px;align-items:flex-start">⚠ <span><b>Only ${usd(avail*px)} of your ${usd(value*px)} can be withdrawn right now.</b> Most of this vault is lent out to borrowers. The rest becomes available as they repay, or when an allocator pulls liquidity back from its markets.</span></div>`:''}
         <div class="divline"></div>
         <div class="btn-row">
           <button class="btn" onclick="openTopup()">Deposit</button>
@@ -1317,12 +1319,12 @@ function earnSim(deposit=0, withdraw=0){
   return {value, nv, nDeposited, accrued, apy:v.netApy};
 }
 function earnSimRows(sim){
-  const p=S.position, v=p.vault;
+  const p=S.position, v=p.vault, px=PRICE_USD[v.asset]||1;
   return `
-    ${Rd('Position value', usd(sim.value), sim.nv<=0.005?'0':usd(sim.nv))}
+    ${Rd('Position value', usd(sim.value*px), sim.nv<=0.005?'0':usd(sim.nv*px))}
     ${R('Net APY (variable)', pct(v.netApy),'pos')}
-    ${Rd('Est. yield / yr', '+'+usd(sim.value*v.netApy/100), sim.nv<=0.005?'$0':'+'+usd(sim.nv*v.netApy/100),'pos')}
-    ${vaultAvail(v)<sim.value?R('Withdrawable now '+tip(VAULT_LIQ_TIP), usd(vaultAvail(v)),'warn'):''}`;
+    ${Rd('Est. yield / yr', '+'+usd(sim.value*px*v.netApy/100), sim.nv<=0.005?'$0':'+'+usd(sim.nv*px*v.netApy/100),'pos')}
+    ${vaultAvail(v)<sim.value?R('Withdrawable now '+tip(VAULT_LIQ_TIP), usd(vaultAvail(v)*px),'warn'):''}`;
 }
 function earnMaxWithdraw(){
   const p=S.position; return Math.min(p.deposited+earnAccrued(p), vaultAvail(p.vault));
@@ -1367,8 +1369,9 @@ function doWithdraw(){
   const p=S.position; const value=p.deposited+earnAccrued(p);
   const wd=Math.min(val('wIn'),value);
   if(wd<=0 || val('wIn')>earnMaxWithdraw()+0.005) return;
-  if(wd>=value-0.005){ p.shares=0; p.deposited=0; toast('Withdrew '+usd(wd)+' · position closed'); }
-  else { p.shares-=wd/p.sharePrice; p.deposited=Math.max(0,p.deposited-wd); toast('Withdrew '+usd(wd)); }
+  const px=PRICE_USD[p.vault.asset]||1;
+  if(wd>=value-0.005){ p.shares=0; p.deposited=0; toast('Withdrew '+usd(wd*px)+' · position closed'); }
+  else { p.shares-=wd/p.sharePrice; p.deposited=Math.max(0,p.deposited-wd); toast('Withdrew '+usd(wd*px)); }
   closeModal();
   if(p.deposited<=0.005){ if(S.product==='dash'){ dashRemove(); return; } S.position=null; go('flow','earn'); }
   else render();
@@ -1392,7 +1395,7 @@ function earnTPrev(){
   const btn=document.getElementById('simBtn');
   if(btn){ btn.disabled=dep<=0; btn.textContent = dep<=0?'Enter an amount':'Deposit'; }
 }
-function doTopup(){ const p=S.position; const amt=val('tIn'); if(amt<=0) return; p.deposited+=amt; p.shares+=amt/p.sharePrice; toast('Deposited '+usd(amt)); closeModal(); render(); }
+function doTopup(){ const p=S.position; const amt=val('tIn'); if(amt<=0) return; p.deposited+=amt; p.shares+=amt/p.sharePrice; toast('Deposited '+usd(amt*(PRICE_USD[p.vault.asset]||1))); closeModal(); render(); }
 function openRewards(){
   const c=rewardsClaimable();
   modal('Claim rewards', `
