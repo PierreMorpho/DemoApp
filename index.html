@@ -420,6 +420,48 @@ b,strong{font-weight:400}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1150px){.cards{grid-template-columns:repeat(2,1fr)}.card.dash{min-height:auto}}
 @media(max-width:900px){.cards{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+/* Portfolio (top-level dashboard) */
+.pf-hero{margin:4px 2px 20px}
+.pf-hero h1{font-size:27px;letter-spacing:-.6px;margin-bottom:9px}
+.pf-hero p{color:var(--muted);font-size:14px;max-width:660px}
+.pf-total{display:flex;gap:36px;margin:0 2px 26px;padding:16px 20px;border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2))}
+.pf-total .t{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.pf-total .v{font-size:23px;letter-spacing:-.4px}
+.pf-section{margin:24px 0}
+.pf-shead{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;flex-wrap:wrap}
+.pf-shead h3{font-size:15px;letter-spacing:-.2px}
+.pf-shead .s{font-size:12px;color:var(--muted2)}
+.pf-list{display:flex;flex-direction:column;gap:9px}
+.pf-row{display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:13px 16px}
+.pf-idn{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.pf-idn-t{min-width:0}
+.pf-name{font-size:14px}
+.pf-sym{font-size:11.5px;color:var(--muted2)}
+.pf-elig-set{display:inline-flex;gap:6px;margin-left:4px}
+.pf-elig{width:23px;height:23px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0}
+.pf-elig svg{width:13px;height:13px;display:block}
+.pf-elig.earn{color:var(--green);background:var(--green-soft);cursor:pointer}
+.pf-elig.earn:hover{filter:brightness(1.15)}
+.pf-elig.borrow{color:var(--accent2);background:var(--accent-soft)}
+.pf-cell{text-align:right;min-width:104px}
+.pf-cell .l{font-size:10.5px;color:var(--muted2);margin-bottom:4px}
+.pf-cell .v{font-size:14px;white-space:nowrap}
+.pf-cell .v small{color:var(--muted);font-size:11.5px}
+.pf-opps{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
+.pf-opp{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:linear-gradient(180deg,var(--panel),var(--bg2));padding:13px 15px;cursor:pointer;transition:.15s}
+.pf-opp:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.pf-opp-t{flex:1;min-width:0}
+.pf-apy{font-size:12px;color:var(--green);margin-top:2px}
+.pf-sub2{font-size:11.5px;color:var(--muted2)}
+.pf-collat{display:flex;align-items:center;gap:7px;margin-top:4px;min-width:0}
+.pf-avs{display:inline-flex;flex-shrink:0}
+.pf-avs .tok{margin-left:-6px;box-shadow:0 0 0 2px var(--panel)}
+.pf-avs .tok:first-child{margin-left:0}
+.pf-collat .pf-sub2{line-height:1.35}
+.pf-go{color:var(--muted2);display:flex;transition:.15s;flex-shrink:0}
+.pf-opp:hover .pf-go{color:var(--text);transform:translateX(3px)}
+.pf-flows{margin-top:32px}
+@media(max-width:720px){.pf-row{flex-wrap:wrap;gap:10px}.pf-cell{min-width:0;flex:1;text-align:left}}
 </style>
 </head>
 <body>
@@ -564,11 +606,11 @@ const MARKETS_F = [ // fixed, Midnight
 
 const PRODUCTS = {
   earn:{name:'Earn', tag:'Morpho Vaults', ico:'📈', color:'var(--green)',
-        steps:['Vaults','Deposit','Execute','Dashboard']},
+        steps:['Portfolio','Deposit','Execute','Dashboard']},
   variable:{name:'Variable-rate borrow', tag:'Morpho Blue', ico:'⚡', color:'var(--accent2)',
-        steps:['Markets','Borrow','Execute','Dashboard']},
+        steps:['Portfolio','Borrow','Execute','Dashboard']},
   fixed:{name:'Fixed-rate borrow', tag:'Morpho Midnight', ico:'🌙', color:'var(--fixed2)',
-        steps:['Markets','Borrow','Execute','Dashboard']},
+        steps:['Portfolio','Borrow','Execute','Dashboard']},
   dash:{name:'Edge case sandbox', tag:'All products', ico:'▦', color:'var(--accent2)', steps:[]},
 };
 // clicking a vault/market card goes straight to its page (no intermediary confirm step)
@@ -601,6 +643,59 @@ function render(){
 }
 
 /* -------------------- HOME -------------------- */
+// Portfolio = the first step of every flow (replaces the old vault/market lists).
+// mode 'earn' shows the Earn section; 'borrow' shows the Lending section. Assets always shown.
+function Portfolio(mode){
+  const rows=[...WALLET].sort((a,b)=>assetValue(b)-assetValue(a));
+  const net=rows.reduce((s,a)=>s+assetValue(a),0);
+  const arrow=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  const assetRows=rows.map(a=>`
+      <div class="pf-row">
+        <div class="pf-idn">
+          ${tok(a.sym,34)}
+          <div class="pf-idn-t"><div class="pf-name">${a.sym}</div></div>
+          ${eligBadges(a.sym, mode)}
+        </div>
+        <div class="pf-cell"><div class="l">Balance</div><div class="v">${money(a.bal, a.bal>=1000?2:4)} <small>${a.sym}</small></div></div>
+        <div class="pf-cell"><div class="l">Value</div><div class="v">${usd(assetValue(a))}</div></div>
+        <div class="pf-cell"><div class="l">Price</div><div class="v">${usd(PRICE_USD[a.sym]||0)}</div></div>
+      </div>`).join('');
+  let opp='';
+  if(mode==='earn'){
+    const cards=VAULTS.map((v,i)=>`
+      <div class="pf-opp" onclick="pick(${i})" role="button" tabindex="0">
+        ${tok(v.asset,30)}
+        <div class="pf-opp-t"><div class="pf-name">${v.name}</div><div class="pf-apy">${pct(v.netApy)} APY</div></div>
+        <span class="pf-go">${arrow}</span>
+      </div>`).join('');
+    opp=`<div class="pf-section"><div class="pf-shead"><h3>Earn</h3><span class="s">Earn yield on idle assets without lockups</span></div><div class="pf-opps">${cards}</div></div>`;
+  } else if(mode==='borrow'){
+    const arr=S.product==='fixed'?MARKETS_F:MARKETS_V;
+    const loans=[...new Set(arr.map(m=>m.loan))];
+    const cards=loans.map(loan=>{
+      const cols=[...new Set(arr.filter(m=>m.loan===loan).map(m=>m.col))];
+      const avs=cols.map(c=>tok(c,18)).join('');
+      return `
+      <div class="pf-opp" onclick="pickBorrow('${loan}')" role="button" tabindex="0">
+        ${tok(loan,30)}
+        <div class="pf-opp-t"><div class="pf-name">Borrow ${loan}</div>
+          <div class="pf-collat"><span class="pf-avs">${avs}</span><span class="pf-sub2">against ${cols.join(', ')}</span></div></div>
+        <span class="pf-go">${arrow}</span>
+      </div>`;}).join('');
+    opp=`<div class="pf-section"><div class="pf-shead"><h3>Lending</h3><span class="s">Borrow against your collateral</span></div><div class="pf-opps">${cards}</div></div>`;
+  }
+  return `
+    <div class="pf-total">
+      <div><div class="t">Net worth</div><div class="v">${usd(net)}</div></div>
+      <div><div class="t">Assets</div><div class="v">${rows.length}</div></div>
+    </div>
+    <div class="pf-section">
+      <div class="pf-shead"><h3>Assets</h3></div>
+      <div class="pf-list">${assetRows}</div>
+    </div>
+    ${opp}`;
+}
+
 function Home(){
   return `
   <div class="fade-in">
@@ -856,6 +951,40 @@ const setVal=(id,v)=>{const e=document.getElementById(id);if(e){e.value=v;e.disp
 
 /* USD value shown under every amount input */
 const PRICE_USD = {USDC:1, USDT:1, DAI:1, sUSDe:1.05, WETH:2920, wstETH:3420, ezETH:3510, cbBTC:64850, WBTC:64850};
+
+/* -------------------- PORTFOLIO (top-level dashboard) -------------------- */
+// A wallet's holdings — the shared first step all three flows branch from.
+const WALLET = [
+  {sym:'cbBTC',  bal:2.5},
+  {sym:'wstETH', bal:40},
+  {sym:'USDC',   bal:25000},
+  {sym:'WETH',   bal:4.2},
+];
+const earnableAsset   = s => VAULTS.some(v=>v.asset===s);                 // has a Morpho vault
+const vaultIndexOf    = s => VAULTS.findIndex(v=>v.asset===s);
+const earnApyOf       = s => { const v=VAULTS.find(v=>v.asset===s); return v?v.netApy:null; };
+const collateralAsset = s => [...MARKETS_V,...MARKETS_F].some(m=>m.col===s); // usable as collateral
+const LOAN_ASSETS     = [...new Set(MARKETS_V.map(m=>m.loan))];            // borrowable loan assets (USDC, WETH)
+const assetValue      = a => a.bal*(PRICE_USD[a.sym]||0);
+
+// Jump straight into a flow from the portfolio, preselected at the config step.
+// Pick a loan asset from the portfolio step → preselect its market and advance to the borrow config.
+function pickBorrow(loan){ const arr=S.product==='fixed'?MARKETS_F:MARKETS_V; const i=arr.findIndex(m=>m.loan===loan); pick(i<0?0:i); }
+
+const EARN_TIP   = 'Earn yield — deposit this asset into a Morpho vault. Click to start.';
+const BORROW_TIP = 'Can be used as collateral to borrow against on Morpho.';
+// sprout — evokes growth / yield
+const EARN_ICO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V11"/><path d="M12 11C12 7 9 5 4 5c0 4 3 6 8 6Z"/><path d="M12 11c0-3.5 2.5-5.5 7-5.5 0 3.5-2.5 5.5-7 5.5Z"/></svg>';
+const BORROW_ICO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
+// The Earn badge is a shortcut into the deposit flow for that asset.
+function goEarn(sym){ go('flow','earn'); const i=vaultIndexOf(sym); S.sel=i<0?0:i; S.step=1; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+// mode gates which eligibility is relevant: 'earn' flow shows only earn, 'borrow' flow only collateral.
+function eligBadges(sym, mode){
+  let h='';
+  if(mode!=='borrow' && earnableAsset(sym))   h+=`<span class="ttip pf-elig earn" onclick="goEarn('${sym}')" role="button" tabindex="0">${EARN_ICO}<span class="tip">${EARN_TIP}</span></span>`;
+  if(mode!=='earn'   && collateralAsset(sym)) h+=`<span class="ttip pf-elig borrow">${BORROW_ICO}<span class="tip">${BORROW_TIP}</span></span>`;
+  return h?`<span class="pf-elig-set">${h}</span>`:'';
+}
 const usdOf = (sym,amt)=> (PRICE_USD[sym]||0)*amt;
 const usdSub = (inputId,sym,amt=0)=> `<div class="usdsub" id="usd_${inputId}">${usd(usdOf(sym,amt))}</div>`;
 function updUsd(inputId,sym){ const e=document.getElementById('usd_'+inputId); if(e) e.textContent=usd(usdOf(sym,val(inputId))); }
@@ -899,27 +1028,9 @@ function earnScreen(){
   }
 }
 function earnSelect(){
-  const list=VAULTS.map((v,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${tokBadge(v.asset)}<div><div class="opt-name">${v.name}</div>
-          <div class="opt-meta"><span class="chiptag">${v.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v">${apyHover(v,true)}</div><div class="l">variable</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Total deposits</div><div class="v">$${v.tvl}M</div></div>
-        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(v.liq)}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Earn</h4>${poweredBy()}</div>
-      <div class="desc">Earn returns on your assets with no lock-up.</div>
-      ${list}
-      ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
-        `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}
-    </div>
-  </div>`;
+  return `${Portfolio('earn')}
+    ${bp('Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns — surface that single number rather than its components.',
+      `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}`;
 }
 
 /* Deposit page (vault page) — terms + amount + live preview in one */
@@ -1209,27 +1320,9 @@ function variableScreen(){
   }
 }
 function varSelect(){
-  const list=MARKETS_V.map((m,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
-          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v" style="color:var(--accent2)">${pct(m.apy)} APY</div><div class="l">variable</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Liquidity</div><div class="v">${fmtLiq(mLiq(m))}</div></div>
-        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,1)}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Variable-rate borrow</h4>${poweredBy()}</div>
-      <div class="desc">Borrow against your collateral at a rate that moves with the market.</div>
-      ${list}
-      ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
-        `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}
-    </div>
-  </div>`;
+  return `${Portfolio('borrow')}
+    ${bp('Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
+      `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}`;
 }
 function selMkt(i){ S.sel=i; render(); }
 
@@ -1575,28 +1668,9 @@ function fixedScreen(){
   }
 }
 function fxSelect(){
-  const list=MARKETS_F.map((m,i)=>`
-    <div class="opt" onclick="pick(${i})">
-      <div class="opt-top">
-        <div class="opt-id">${pairBadge(m.col,m.loan)}<div><div class="opt-name">${m.col} / ${m.loan}</div>
-          <div class="opt-meta"><span class="chiptag">${m.chain}</span></div></div></div>
-        <div class="opt-apy"><div class="v" style="color:var(--fixed2)">${pct(m.bestApy)} APY</div><div class="l">fixed · for $1,000 borrow</div></div>
-      </div>
-      <div class="opt-stats">
-        <div class="s"><div class="l">Maturity</div><div class="v">${m.maturity}</div></div>
-        <div class="s"><div class="l">Max LTV</div><div class="v">${pct(m.lltv,0)}</div></div>
-        <div class="s"><div class="l">Book depth</div><div class="v">${usd(bidsOf(m).reduce((a,b)=>a+b[1],0))}</div></div>
-      </div>
-    </div>`).join('');
-  return `<div style="max-width:720px">
-    <div class="panel">
-      <div class="titlerow"><h4>Fixed-rate borrow</h4>${poweredBy()}</div>
-      <div class="desc">Lock your rate until a maturity date.</div>
-      ${list}
-      ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
-        `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}
-    </div>
-  </div>`;
+  return `${Portfolio('borrow')}
+    ${bp('Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
+      `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}`;
 }
 /* fixed math: walk the bid book */
 function fxQuote(borrowUnits){
