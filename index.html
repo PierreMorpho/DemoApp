@@ -493,6 +493,9 @@ body:not(.genius) .genius-rail{display:none}
 .pf-shead{display:flex;align-items:baseline;gap:10px;margin:0 2px 12px;flex-wrap:wrap}
 .pf-shead h3{font-size:15px;letter-spacing:-.2px}
 .pf-shead .s{font-size:12px;color:var(--muted2)}
+.pf-shead-stack{flex-direction:column;align-items:flex-start;gap:5px}
+.pf-stitle{display:flex;align-items:baseline;gap:9px}
+.pf-stitle h3{line-height:1}
 .pf-list{display:flex;flex-direction:column;gap:9px}
 .pf-row{display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);padding:13px 16px}
 .pf-idn{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
@@ -756,7 +759,7 @@ function Portfolio(mode){
         <div class="pf-opp-t"><div class="pf-name">${v.name}</div><div class="pf-apy">${pct(v.netApy)} APY</div></div>
         <span class="pf-go">${arrow}</span>
       </div>`).join('');
-    opp=`<div class="pf-section"><div class="pf-shead"><h3>Earn</h3><span class="s">Earn yield on idle assets without lockups</span></div><div class="pf-opps">${cards}</div></div>`;
+    opp=`<div class="pf-section"><div class="pf-shead pf-shead-stack"><div class="pf-stitle"><h3>Earn</h3>${poweredBy()}</div><span class="s">Earn yield on idle assets without lockups</span></div><div class="pf-opps">${cards}</div></div>`;
   } else if(mode==='borrow'){
     const arr=S.product==='fixed'?MARKETS_F:MARKETS_V;
     const loans=[...new Set(arr.map(m=>m.loan))];
@@ -770,7 +773,7 @@ function Portfolio(mode){
           <div class="pf-collat"><span class="pf-avs">${avs}</span><span class="pf-sub2">against ${cols.join(', ')}</span></div></div>
         <span class="pf-go">${arrow}</span>
       </div>`;}).join('');
-    opp=`<div class="pf-section"><div class="pf-shead"><h3>Lending</h3><span class="s">Borrow against your collateral</span></div><div class="pf-opps">${cards}</div></div>`;
+    opp=`<div class="pf-section"><div class="pf-shead pf-shead-stack"><div class="pf-stitle"><h3>Lending</h3>${poweredBy()}</div><span class="s">Borrow against your collateral</span></div><div class="pf-opps">${cards}</div></div>`;
   }
   return `
     <div class="pf-total">
