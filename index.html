@@ -508,6 +508,8 @@ body:not(.genius) .genius-rail{display:none}
 .pf-elig.earn{color:var(--green);background:var(--green-soft);cursor:pointer}
 .pf-elig.earn:hover{filter:brightness(1.15)}
 .pf-elig.borrow{color:var(--accent2);background:var(--accent-soft)}
+.pf-elig.pf-elig-apy{width:auto;gap:5px;padding:0 9px;height:23px}
+.pf-elig-txt{font-size:11px;white-space:nowrap}
 .pf-cell{text-align:right;min-width:104px}
 .pf-cell .l{font-size:10.5px;color:var(--muted2);margin-bottom:4px}
 .pf-cell .v{font-size:14px;white-space:nowrap}
@@ -1075,7 +1077,7 @@ function goEarn(sym){ go('flow','earn'); const i=vaultIndexOf(sym); S.sel=i<0?0:
 // mode gates which eligibility is relevant: 'earn' flow shows only earn, 'borrow' flow only collateral.
 function eligBadges(sym, mode){
   let h='';
-  if(mode!=='borrow' && earnableAsset(sym))   h+=`<span class="ttip pf-elig earn" onclick="goEarn('${sym}')" role="button" tabindex="0">${EARN_ICO}<span class="tip">${EARN_TIP}</span></span>`;
+  if(mode!=='borrow' && earnableAsset(sym))   h+=`<span class="ttip pf-elig earn pf-elig-apy" onclick="goEarn('${sym}')" role="button" tabindex="0">${EARN_ICO}<span class="pf-elig-txt">Up to ${pct(earnApyOf(sym))} APY</span><span class="tip">${EARN_TIP}</span></span>`;
   if(mode!=='earn'   && collateralAsset(sym)) h+=`<span class="ttip pf-elig borrow">${BORROW_ICO}<span class="tip">${BORROW_TIP}</span></span>`;
   return h?`<span class="pf-elig-set">${h}</span>`:'';
 }
