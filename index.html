@@ -166,6 +166,7 @@ b,strong{font-weight:400}
 
 /* Panels & grid */
 .grid{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;align-items:start}
+.cfg-single{max-width:600px;margin:0 auto}
 .panel{border:1px solid var(--border);border-radius:var(--radius);background:linear-gradient(180deg,var(--panel),var(--bg2));padding:20px}
 .panel h4{font-size:15px;letter-spacing:-.2px;margin-bottom:4px}
 .panel .desc{font-size:12.5px;color:var(--muted);margin-bottom:16px}
@@ -225,7 +226,7 @@ b,strong{font-weight:400}
 .field label .bal b{color:var(--muted);font-weight:400}
 .inp{display:flex;align-items:center;gap:10px;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;background:var(--bg);transition:.15s}
 .inp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.inp input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:19px;font-weight:400;width:100%;font-family:var(--mono)}
+.inp input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:19px;font-weight:400;width:100%;font-family:var(--font)}
 .inp .assetbtn{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:400;background:var(--panel2);border:1px solid var(--border);padding:6px 10px;border-radius:8px}
 .inp .maxbtn{font-size:11px;font-weight:400;color:var(--accent2);padding:5px 9px;border-radius:7px;background:var(--accent-soft)}
 .inp .maxbtn:hover{background:rgba(41,115,255,.24)}
@@ -235,6 +236,7 @@ b,strong{font-weight:400}
 .am-chev{color:var(--muted2);flex-shrink:0}
 .assetmenu-bg{position:fixed;inset:0;z-index:30}
 .assetmenu{position:absolute;top:calc(100% + 6px);right:0;z-index:31;min-width:184px;background:var(--panel);border:1px solid var(--border2);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:5px}
+.assetmenu.left{right:auto;left:0}
 .assetmenu-item{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
 .assetmenu-item:hover{background:var(--panel2)}
 .assetmenu-item.on{background:var(--accent-soft)}
@@ -254,6 +256,37 @@ b,strong{font-weight:400}
 .hbar .mark{position:absolute;top:-4px;width:3px;height:17px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px var(--markshadow);transition:left .35s cubic-bezier(.2,.8,.2,1)}
 .hbar .liq{position:absolute;top:-3px;width:2px;height:15px;background:var(--red);opacity:.8}
 .hscale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-top:6px}
+
+/* LTV bar (borrow config) — scale 0 → LLTV, marker at current LTV, tick at max pre-set LTV */
+.ltvbar{margin:16px 0 2px}
+.ltvbar-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-bottom:22px}
+.ltvbar-top .l{color:var(--muted)}
+.ltvbar-top .v{font-weight:400;font-size:15px}
+.ltv-track{height:9px;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--amber) 55%,var(--red));position:relative;overflow:visible;cursor:pointer;touch-action:none}
+.ltv-mark{position:absolute;top:-5px;width:5px;height:19px;border-radius:3px;background:#fff;box-shadow:0 0 0 2px var(--markshadow);transition:left .35s cubic-bezier(.2,.8,.2,1);z-index:2;cursor:grab}
+.ltv-mark::after{content:"";position:absolute;top:-8px;bottom:-8px;left:-9px;right:-9px}
+.ltvbar.dragging{cursor:grabbing}
+.ltvbar.dragging .ltv-mark{transition:none;cursor:grabbing}
+.ltvbar.dragging .ltv-cap{transition:none}
+.ltv-cap{position:absolute;top:-5px;width:2px;height:19px;background:var(--text);opacity:.5;border-radius:2px;transition:left .35s cubic-bezier(.2,.8,.2,1)}
+.ltv-cap .cap-lbl{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+.ltv-lltv{position:absolute;top:-3px;right:0;width:2px;height:15px;background:var(--red);opacity:.85;border-radius:2px}
+.ltv-scale{position:relative;height:13px;margin-top:8px;font-size:10px;color:var(--muted2)}
+.ltv-scale span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ltv-scale span.start{transform:translateX(0)}
+.ltv-scale span.end{transform:translateX(-100%);color:var(--muted)}
+/* interest-rate line under the LTV bar (variable) */
+.rate-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--accent-soft);padding:13px 16px;margin:16px 0 4px}
+.rate-line .l{font-size:12px;color:var(--muted)}
+.rate-line .v{font-size:19px;letter-spacing:-.3px;color:var(--accent2)}
+/* maturity + rate card (fixed) */
+.fx-mat{display:flex;flex-direction:column;gap:6px}
+.fx-mat .term{color:var(--muted2)}
+.fx-rate .fx-rate-r{text-align:right}
+.fx-rate .fx-rate-r .v{font-size:19px;letter-spacing:-.3px;color:var(--accent2)}
+.assetbtn.mat{display:inline-flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--border);padding:8px 13px;border-radius:9px;font-size:14px;line-height:1}
+.assetbtn.mat .cal{color:var(--muted2);flex-shrink:0;display:block}
+.assetbtn.mat .am-chev{margin-left:1px}
 
 /* Buttons */
 .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:.15s;background:var(--accent);color:#fff;box-shadow:var(--btn-shadow)}
@@ -711,20 +744,41 @@ function colAssetBtn(m){
     : '';
   return `<div class="assetsel"><button class="assetbtn${multi?' sel':''}"${multi?' onclick="toggleColMenu()" title="Change collateral asset"':''}>${tokBadge(m.col,true)} ${m.col}${chev}</button>${menu}</div>`;
 }
-function toggleColMenu(){ S.colMenuOpen=!S.colMenuOpen; render(); }
+function toggleColMenu(){ S.colMenuOpen=!S.colMenuOpen; S.matMenuOpen=false; render(); }
 function pickCollateral(i){
-  S.sel=i; S.colMenuOpen=false;
-  if(S.product==='fixed'){ S.form.col=null; S.form.col=Math.round(fxMath().reqCol*1e4)/1e4; } // fixed infers collateral
-  else { S.form.col=0; }                                                                       // variable: new asset units — re-enter collateral
+  S.sel=i; S.colMenuOpen=false; S.matMenuOpen=false;
+  S.form.col = S.product==='fixed' ? null : 0;   // new asset — user re-enters collateral (never auto-filled)
   render();
 }
+
+/* Maturity picker (fixed only) — switch between terms of the same (loan, collateral) market.
+   Keeps the borrow/collateral inputs so the user can compare rates across maturities. */
+const MAT_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtMatDate(s){ const p=(''+s).split('-'); return p.length===3 ? MAT_MONTHS[(+p[1])-1]+' '+(+p[2]) : s; }
+function matAltMarkets(m){
+  const out=[];
+  MARKETS_F.forEach((mk,i)=>{ if(mk.loan===m.loan && mk.col===m.col) out.push({i, maturity:mk.maturity, days:mk.days, bestApy:mk.bestApy}); });
+  return out.sort((a,b)=>a.days-b.days);
+}
+function matBtn(m){
+  const alts=matAltMarkets(m); const multi=alts.length>1;
+  const cal=`<svg class="cal" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+  const chev = multi?` <svg class="am-chev" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`:'';
+  const menu = (multi && S.matMenuOpen)
+    ? `<div class="assetmenu-bg" onclick="toggleMatMenu()"></div><div class="assetmenu left">`+alts.map(o=>
+        `<div class="assetmenu-item ${o.i===S.sel?'on':''}" onclick="pickMaturity(${o.i})"><span class="am-name">${fmtMatDate(o.maturity)}</span><span class="am-meta">${o.days} days</span></div>`).join('')+`</div>`
+    : '';
+  return `<div class="assetsel"><button class="assetbtn mat${multi?' sel':''}"${multi?' onclick="toggleMatMenu()" title="Change maturity"':''}>${cal}${fmtMatDate(m.maturity)}${chev}</button>${menu}</div>`;
+}
+function toggleMatMenu(){ S.matMenuOpen=!S.matMenuOpen; S.colMenuOpen=false; render(); }
+function pickMaturity(i){ S.sel=i; S.matMenuOpen=false; render(); }   // keep S.form so rates can be compared
 
 /* -------------------- ROUTER -------------------- */
 function go(route, product){
   clearTimers();
   S.route=route; S.detail=false; S.dashKind=null;
   if(route==='home'){ S.product=null; }
-  if(product){ S.product=product; S.step=0; S.sel=null; S.form={}; S.position=null; S.fxDrift=0; S.fxSecs=15; S.colMenuOpen=false; if(product==='dash') seedDash(); }
+  if(product){ S.product=product; S.step=0; S.sel=null; S.form={}; S.position=null; S.fxDrift=0; S.fxSecs=15; S.colMenuOpen=false; S.matMenuOpen=false; if(product==='dash') seedDash(); }
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -1057,6 +1111,7 @@ const MAX_LTV_TIP = 'The most a user can borrow against their collateral, kept b
 const FX_APY_TIP = 'Interest starts accruing the moment the position is active. The whole fixed term is charged up front, not day by day.';
 const FX_EXIT_TIP = 'The rate is fixed until maturity. Exiting early still pays the full accrued interest, unless a secondary market for early exit is offered (a separate flow).';
 const FX_MATURITY_TIP = 'You must repay before maturity or the position is liquidated.';
+const FX_MATURITY_MKT_TIP = 'The maturity of this fixed-rate market: the date the loan is due. The rate is locked until then, and you repay in full by this date. The same market can offer several maturities — switch between them to compare rates.';
 
 /* helper: stat row */
 function R(l,v,cls='',help){ return `<div class="row"><span class="l">${l}${help?`<span class="help" title="${help}">?</span>`:''}</span><span class="v ${cls}">${v}</span></div>`; }
@@ -1135,6 +1190,70 @@ function healthBar(hf, liqPct){
     <div class="hscale"><span>1.00 · liquidation</span><span>safe →</span></div>
   </div>`;
 }
+/* LTV bar for the borrow config pages: scale 0 → LLTV, moving marker at current LTV,
+   a tick at the integrator max-open LTV, and the LLTV as the end label. */
+function ltvBar(d, m){
+  const lltv=m.lltv;
+  const cur=clamp((d.ltv||0)/lltv,0,1)*100;                 // current LTV position on the bar
+  const cap=clamp((d.maxLtv||0)/lltv,0,1)*100;              // max pre-set (integrator) LTV tick
+  const p25=25/lltv*100, p50=50/lltv*100;                   // intermediate scale labels, positioned by value
+  const cls=liqCls(d.ltv,lltv);
+  const debt = S.product==='fixed'? d.totalDebt : d.debt;
+  const drag = debt>0;                                       // draggable only once a borrow amount is set
+  return `<div class="ltvbar${S._ltvDrag?' dragging':''}">
+    <div class="ltvbar-top"><span class="l">LTV<button class="fx-ltvbtn" onclick="openLtvModal()" title="Set max LTV to open">${pct(d.maxLtv,0)} LTV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span><span class="v ${cls}">${d.ltv>0?pct(d.ltv,1):'—'}</span></div>
+    <div class="ltv-track"${drag?' onmousedown="ltvDragStart(event)" ontouchstart="ltvDragStart(event)"':' style="cursor:default"'}>
+      <div class="ltv-lltv"></div>
+      <div class="ltv-cap" style="left:${cap}%"><span class="cap-lbl">Max ${pct(d.maxLtv,0)}</span></div>
+      <div class="ltv-mark" style="left:${cur}%"${drag?'':' style="cursor:default"'}></div>
+    </div>
+    <div class="ltv-scale">
+      <span class="start" style="left:0%">0%</span>
+      ${p25<95?`<span style="left:${p25}%">25%</span>`:''}
+      ${p50<95?`<span style="left:${p50}%">50%</span>`:''}
+      <span class="end" style="left:100%">${pct(lltv,0)} · LLTV</span>
+    </div>
+  </div>`;
+}
+/* Drag the LTV marker → sets the collateral needed to reach that LTV (clamped to the max-open tick
+   and the wallet balance). Debt is fixed by the borrow amount, so LTV moves purely with collateral. */
+function borrowColBal(m){ return S.product==='fixed'? fxColBal(m) : (m.col==='cbBTC'?2.5:(m.col==='wstETH'?40:(m.col==='ezETH'?300:30))); }
+/* Move the marker + LTV readout + collateral input in place — no full re-render, so the drag stays
+   smooth and the live mouse gesture is never interrupted by an innerHTML rebuild. */
+function ltvDragMove(ev){
+  if(ev.cancelable) ev.preventDefault();
+  const track=document.querySelector('.ltv-track'); if(!track) return;
+  const r=track.getBoundingClientRect(); if(!r.width) return;
+  const cx=(ev.touches&&ev.touches[0])?ev.touches[0].clientX:ev.clientX;
+  const frac=clamp((cx-r.left)/r.width,0,1);
+  const m=S.product==='fixed'?MARKETS_F[S.sel]:MARKETS_V[S.sel];
+  const pre=S.product==='fixed'?fxMath():varMath();
+  const debt=S.product==='fixed'?pre.totalDebt:pre.debt;
+  if(debt<=0) return;
+  const target=Math.min(frac*m.lltv, pre.maxLtv);       // never past the max-open tick
+  const price=cPrice(m);
+  let col=(target>0&&price>0)? debt/(price*target/100) : 0;
+  col=Math.min(col, borrowColBal(m));                   // never past the wallet balance
+  S.form.col=Math.round(col*1e4)/1e4;
+  const d=S.product==='fixed'?fxMath():varMath();        // recompute with the new collateral
+  const mark=track.querySelector('.ltv-mark'); if(mark) mark.style.left=(clamp((d.ltv||0)/m.lltv,0,1)*100)+'%';
+  const bar=track.closest('.ltvbar'); const v=bar&&bar.querySelector('.ltvbar-top .v');
+  if(v){ v.textContent=d.ltv>0?pct(d.ltv,1):'—'; v.className='v '+liqCls(d.ltv,m.lltv); }
+  const id=S.product==='fixed'?'fcIn':'colIn'; const inp=document.getElementById(id);
+  if(inp) inp.value=S.form.col; updUsd(id,m.col);
+}
+function ltvDragStart(ev){
+  const pre=S.product==='fixed'?fxMath():varMath();
+  if((S.product==='fixed'?pre.totalDebt:pre.debt)<=0) return;   // need a borrow amount first
+  if(ev.cancelable) ev.preventDefault();
+  S._ltvDrag=true;
+  const bar=document.querySelector('.ltvbar'); if(bar) bar.classList.add('dragging');
+  ltvDragMove(ev);
+  const mv=e=>ltvDragMove(e);
+  const up=()=>{ S._ltvDrag=false; document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',up); render(); };
+  document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  document.addEventListener('touchmove',mv,{passive:false}); document.addEventListener('touchend',up);
+}
 
 /* =====================================================================
    EARN FLOW
@@ -1142,7 +1261,7 @@ function healthBar(hf, liqPct){
 function earnScreen(){
   switch(S.step){
     case 0: return earnSelect();
-    case 1: return earnConfigure();
+    case 1: return earnDeposit();     // amount + collapsible vault info
     case 2: return earnExecute();
     case 3: return earnDashboard();
   }
@@ -1159,41 +1278,13 @@ function earnSelect(){
 `{ vaultV2s(where:{chainId_in:[8453]}){ items{ address symbol asset{symbol} avgNetApy } } }`))}`;
 }
 
-/* Deposit page (vault page) — terms + amount + live preview in one */
-function earnConfigure(){
+/* Deposit page (vault page) — amount + live preview + collapsible vault information */
+function earnDeposit(){
   S.txDone=false;
-  const v=VAULTS[S.sel]; const bal=25000; const amt=S.form.amt||0; const shares=amt/1.0842; const px=PRICE_USD[v.asset]||1;
-  return `<div class="grid">
+  const v=VAULTS[S.sel]; const bal=25000; const amt=S.form.amt||0; const px=PRICE_USD[v.asset]||1;
+  return `<div class="cfg-single">
     <div class="panel">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:2px">${tokBadge(v.asset,false)}<div><h4 style="margin:0">Earn with ${v.name}</h4><div class="tag muted tiny">Morpho Vault · ${v.chain}</div></div></div>
-
-      <div class="vstats">
-        <div class="vstat"><div class="l">Net APY · variable</div><div class="v" style="color:var(--green)">${apyHover(v)}</div></div>
-        <div class="vstat"><div class="l">Exposure</div><div class="v">${collateralAvatars(v)}</div></div>
-        <div class="vstat"><div class="l">Total deposits</div><div class="v">$${v.tvl}M</div></div>
-        <div class="vstat"><div class="l">Liquidity</div><div class="v" style="${v.liq<0.05?'color:var(--amber)':''}">${fmtLiq(v.liq)}</div></div>
-      </div>
-
-      <div class="showmore">
-        <span class="ln"></span>
-        <button class="${S.showAdv?'open':''}" onclick="toggleAdv()">${S.showAdv?'Show less':'Show more'} <span class="cx">▾</span></button>
-        <span class="ln"></span>
-      </div>
-      ${S.showAdv?`<div class="rows adv fade-in">
-        ${R('Curator', curatorBadge(v.curator)+v.curator)}
-        ${R('Vault address', `<a class="extlink mono" href="${EXPLORER+v.addr}" target="_blank" rel="noopener noreferrer">${shortAddr(v.addr)} ↗</a>`)}
-        ${R('Deployment date', v.deployed)}
-      </div>`:''}
-
-      ${v.warn?`<div class="warnrow" style="margin-top:12px">⚠ ${v.warn}</div>`:''}
-      ${bp('.vstats','SDK','Read vault + preview','Attach the SDK to a viem client, read the vault, and convert the entered amount to shares before depositing.',
-`const client = createWalletClient({ account, chain, transport })
-  .extend(morphoViemExtension({ supportSignature: true }));
-const vault = client.morpho.vaultV2(vaultAddress, chainId);
-const data  = await vault.getData();      ${cm('// share price, APY')}
-const shares = data.toShares(assets);     ${cm('// preview deposit')}`)}
-    </div>
-    <div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">${tokBadge(v.asset,false)}<div><h4 style="margin:0">Earn with ${v.name}</h4><div class="tag muted tiny">Morpho Vault · ${v.chain}</div></div></div>
       <div class="field" style="margin-bottom:12px">
         <label>Deposit<span class="bal">Balance: <b>${money(bal,0)} ${v.asset}</b></span></label>
         <div class="inp">
@@ -1208,8 +1299,29 @@ const shares = data.toShares(assets);     ${cm('// preview deposit')}`)}
         ${R('Net APY (variable)', pct(v.netApy),'pos')}
         ${R('Est. yield / yr', amt?'+'+usd(amt*px*v.netApy/100):'—','pos')}
       </div>
+      ${bp('.field','SDK','Read vault + preview','Attach the SDK to a viem client, read the vault, and convert the entered amount to shares before depositing.',
+`const client = createWalletClient({ account, chain, transport })
+  .extend(morphoViemExtension({ supportSignature: true }));
+const vault = client.morpho.vaultV2(vaultAddress, chainId);
+const data  = await vault.getData();      ${cm('// share price, APY')}
+const shares = data.toShares(assets);     ${cm('// preview deposit')}`)}
+
+      <div class="showmore">
+        <span class="ln"></span>
+        <button class="${S.showAdv?'open':''}" onclick="toggleAdv()">Vault information <span class="cx">▾</span></button>
+        <span class="ln"></span>
+      </div>
+      ${S.showAdv?`<div class="rows adv fade-in">
+        ${R('Exposure', collateralAvatars(v))}
+        ${R('Total deposits', '$'+v.tvl+'M')}
+        ${R('Liquidity', fmtLiq(v.liq), v.liq<0.05?'warn':'')}
+        ${R('Curator', curatorBadge(v.curator)+v.curator)}
+        ${R('Vault address', `<a class="extlink mono" href="${EXPLORER+v.addr}" target="_blank" rel="noopener noreferrer">${shortAddr(v.addr)} ↗</a>`)}
+        ${R('Deployment date', v.deployed)}
+      </div>`:''}
+      ${v.warn?`<div class="warnrow" style="margin-top:12px">⚠ ${v.warn}</div>`:''}
       <div class="divline"></div>
-      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${!amt?'disabled':''} onclick="next()">Review deposit</button></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${!amt?'disabled':''} onclick="next()">Review Deposit</button></div>
       <div class="pbm-foot">${poweredBy()}</div>
     </div>
   </div>`;
@@ -1243,7 +1355,7 @@ function earnExecute(){
     </div>
     ${legalFooter()}
     <div class="spacer"></div>
-    <button class="btn" id="signBtn" onclick="earnSign()">Sign & deposit</button>
+    <button class="btn" id="signBtn" onclick="earnSign()">Deposit</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
     ${bp('#bundle','on-chain','Bundle approve + deposit','Build the deposit with the SDK. getRequirements() surfaces the ERC-20 approval or Permit2 signature; buildTx assembles one signed multicall through Bundler3.',
@@ -1496,38 +1608,40 @@ function varMath(){
   const feeAmt=borrow*m.origFee/100;      // origination fee is ADDED to the debt
   const debt=borrow+feeAmt;               // what actually accrues interest
   const colValue=col*cPrice(m);
-  // borrow is bounded by the max-open LTV cap AND by the market's available liquidity
-  const maxByCollateral=(colValue*maxLtv/100)/(1+m.origFee/100);
+  // borrow is bounded by the max-open LTV cap (using the full wallet balance) AND market liquidity
+  const maxByBalance=(borrowColBal(m)*cPrice(m)*maxLtv/100)/(1+m.origFee/100);
   const maxByLiquidity=marketLiquidity(m);
-  const maxBorrow=Math.min(maxByCollateral,maxByLiquidity);
-  const liqCapped=maxByLiquidity<maxByCollateral;
+  const maxBorrow=Math.min(maxByBalance,maxByLiquidity);
+  const liqCapped=maxByLiquidity<maxByBalance;
   const overLiquidity=borrow>maxByLiquidity;
   const ltv= colValue>0 ? (debt/colValue)*100 : 0;
   const overCap= borrow>0 && col>0 && ltv>maxLtv+0.1;
   const overLltv= borrow>0 && col>0 && ltv>m.lltv+0.1;
   const liqPrice= col>0 ? debt/(col*m.lltv/100) : 0;
   const hf= debt>0 ? (colValue*m.lltv/100)/debt : Infinity;
-  return {m,maxLtv,col,borrow,feeAmt,debt,colValue,ltv,maxByCollateral,maxByLiquidity,maxBorrow,liqCapped,overLiquidity,overCap,overLltv,liqPrice,hf};
+  return {m,maxLtv,col,borrow,feeAmt,debt,colValue,ltv,maxByBalance,maxByLiquidity,maxBorrow,liqCapped,overLiquidity,overCap,overLltv,liqPrice,hf};
 }
 /* Borrow page (market page) — risk header + amounts + live health */
 function varConfigure(){
   S.txDone=false;
   const m=MARKETS_V[S.sel]; const colBal=m.col==='cbBTC'?2.5:(m.col==='wstETH'?40:(m.col==='ezETH'?300:30));
   const d=varMath();
-  return `<div class="grid">
+  return `<div class="cfg-single">
     <div class="panel">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${pairBadge(m.col,m.loan)}<div><h4 style="margin:0">${m.col} / ${m.loan}</h4><div class="tag muted tiny">${m.chain} · <a class="extlink" href="${m.oracleUrl}" target="_blank" rel="noopener noreferrer">${m.oracle} ↗</a> · LLTV ${pct(m.lltv,0)}</div></div></div>
       <div class="field">
-        <label><span class="lbl">Collateral<button class="fx-ltvbtn" onclick="openLtvModal()" title="Set max LTV to open">${pct(d.maxLtv,0)} LTV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span><span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
+        <label>Borrow<span class="bal">Max: <b>${money(Math.floor(d.maxBorrow),0)} ${m.loan}</b>${d.liqCapped?' '+tip(LIQ_TIP):''}</span></label>
+        <div class="inp"><input id="borIn" type="text" inputmode="decimal" value="${d.borrow||''}" placeholder="0.00" oninput="varSet('borrow',this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button><button class="maxbtn" onclick="varSet('borrow',${Math.floor(d.maxBorrow)})">MAX</button></div>
+        ${usdSub('borIn',m.loan,d.borrow)}
+      </div>
+      <div class="field" style="margin-bottom:6px">
+        <label><span class="lbl">Collateral</span><span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
         <div class="inp"><input id="colIn" type="text" inputmode="decimal" value="${d.col||''}" placeholder="0.00" oninput="varSet('col',this.value)">${colAssetBtn(m)}<button class="maxbtn" onclick="varSet('col',${colBal})">MAX</button></div>
         ${usdSub('colIn',m.col,d.col)}
       </div>
-      <div class="field" style="margin-bottom:6px">
-        <label>Borrow<span class="bal">Max: <b>${money(Math.floor(d.maxBorrow),0)} ${m.loan}</b>${d.liqCapped?' '+tip(LIQ_TIP):''}</span></label>
-        <div class="inp"><input id="borIn" type="text" inputmode="decimal" value="${d.borrow||''}" placeholder="0.00" oninput="varSet('borrow',this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="varSet('borrow',${Math.floor(d.maxBorrow)})">MAX</button>`:''}</div>
-        ${usdSub('borIn',m.loan,d.borrow)}
-      </div>
-      ${bp('.health','off-chain','Live risk math','Recompute LTV, health and liquidation on every keystroke from market params and the oracle price: pure math, no tx. The oracle returns price() scaled to 1e36.',
+      ${ltvBar(d,m)}
+      <div class="rate-line"><span class="l">Borrow APY · variable</span><span class="v">${pct(m.apy)}</span></div>
+      ${bp('.ltvbar','off-chain','Live risk math','Recompute LTV, health and liquidation on every keystroke from market params and the oracle price: pure math, no tx. The oracle returns price() scaled to 1e36.',
 `${cm('// oracle.price(): collateral quoted in loan, scaled 1e36')}
 const p = await oracle.price();
 const collateralValue = collateral * p / 1e36;
@@ -1536,20 +1650,10 @@ const maxBorrow = Math.min(
   collateralValue * lltv,                         ${cm('// LLTV bound')}
   liquidityAssets                                 ${cm('// available liquidity')}
 );`)}
-    </div>
-    <div class="panel">
-      ${healthBar(d.hf)}
-      <div class="rows" style="margin-top:14px">
-        ${R('Borrow APY (variable)', pct(m.apy))}
-        ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), d.feeAmt?'+'+money(d.feeAmt,2)+' '+m.loan:'—')}
-        ${R('Total debt', d.debt?money(d.debt,2)+' '+m.loan:'—')}
-        ${R('LTV '+tip(MAX_LTV_TIP), d.borrow?pct(d.ltv,1)+' / '+pct(m.lltv,0):'—', liqCls(d.ltv,m.lltv))}
-        ${R('Liquidation price', d.liqPrice?usd(d.liqPrice)+' per '+m.col:'—',liqCls(d.ltv,m.lltv))}
-      </div>
       ${d.overLltv?`<div class="warnrow" style="margin-top:12px">⚠ LTV ${pct(d.ltv,1)} exceeds the liquidation LTV (${pct(m.lltv,0)}). Reduce borrow or add collateral.</div>`:d.overCap?`<div class="warnrow" style="margin-top:12px">⚠ LTV ${pct(d.ltv,1)} exceeds your max LTV (${pct(d.maxLtv,0)}). Reduce borrow or add collateral.</div>`:''}
       ${d.overLiquidity?`<div class="warnrow" style="margin-top:12px">⚠ Only ${money(Math.floor(d.maxByLiquidity),0)} ${m.loan} is available to borrow in this market right now</div>`:''}
       <div class="divline"></div>
-      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${(!d.col||!d.borrow||d.overCap||d.overLiquidity)?'disabled':''} onclick="next()">Review borrow</button></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${(!d.col||!d.borrow||d.overCap||d.overLiquidity)?'disabled':''} onclick="next()">Review Borrow</button></div>
       <div class="pbm-foot">${poweredBy()}</div>
     </div>
   </div>`;
@@ -1593,7 +1697,7 @@ function varExecute(){
     <div class="warnrow" style="margin-top:14px;align-items:flex-start">⚠ <span>Interest accrues continuously. The rate varies with market conditions, so your debt grows over time.</span></div>
     ${legalFooter()}
     <div class="spacer"></div>
-    <button class="btn" id="signBtn" onclick="varSign()">Sign & borrow</button>
+    <button class="btn" id="signBtn" onclick="varSign()">Borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
     ${bp('#bundle','on-chain','Bundle supply + borrow','Build with the SDK. getRequirements() surfaces token approvals plus the one-time morpho.setAuthorization the bundler needs to open debt; buildTx chains supplyCollateral and borrow atomically.',
@@ -1609,7 +1713,7 @@ function varSign(){
   runBundle(()=>{
     const d=varMath();
     // debt is fee-inclusive; received is what hit the wallet
-    S.position={ type:'variable', m:d.m, col:d.col, debt:d.debt, received:d.borrow, apy:d.m.apy, day:0 };
+    S.position={ type:'variable', m:d.m, col:d.col, debt:d.debt, received:d.borrow, apy:d.m.apy, day:0, maxLtv:d.maxLtv };
     S.txDone=true; toast('Borrow confirmed'); render();
   });
 }
@@ -1689,6 +1793,10 @@ market.repayWithdrawCollateral({ shares: borrowShares, ... });`)}
 /* variable manage modals */
 /* --- variable: simulate the resulting position for any combination of inputs --- */
 const SAFETY = 1.05; // buffer kept above liquidation when withdrawing collateral
+/* LTV ceiling for taking on more exposure (borrow more / withdraw collateral) via a MAX action.
+   Positions opened through the flow carry the integrator max-open cap; seeded/dashboard
+   positions have none, so fall back to the liquidation buffer (reproduces prior behaviour). */
+function borrowLtvCap(p){ return p.maxLtv || (p.m.lltv/SAFETY); }
 function varSim(repay=0, withdraw=0, add=0, borrow=0){
   const p=S.position, m=p.m;
   const feeAmt = borrow*m.origFee/100;
@@ -1705,7 +1813,8 @@ function varMaxWithdraw(repay=0){
   const p=S.position, m=p.m;
   const nd=Math.max(0,p.debt-repay);
   if(nd<=0) return p.col;
-  const need=(nd/(m.lltv/100))/cPrice(m)*SAFETY;
+  // keep the remaining position within the max-open LTV after withdrawal
+  const need=(nd/(borrowLtvCap(p)/100))/cPrice(m);
   return Math.max(0,p.col-need);
 }
 /* what the market can still lend, net of what this position already drew */
@@ -1713,8 +1822,8 @@ function varRemainingLiquidity(p){ return Math.max(0, marketLiquidity(p.m) - (p.
 function varMaxBorrow(add=0){
   const p=S.position, m=p.m;
   const cv=(p.col+add)*cPrice(m);
-  // keep the same safety buffer varSimWarn enforces, so MAX never rejects itself
-  const room=Math.max(0, cv*m.lltv/100/SAFETY - p.debt);
+  // cap new debt at the position's max-open LTV, so MAX never exceeds it
+  const room=Math.max(0, cv*borrowLtvCap(p)/100 - p.debt);
   // bounded by collateral AND by remaining market liquidity
   return Math.min(room/(1+m.origFee/100), varRemainingLiquidity(p));
 }
@@ -1731,10 +1840,9 @@ function varSimRows(sim, opts={}){
     ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (dust||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (dust||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
 }
 function varSimWarn(sim){
-  const m=S.position.m;
+  const p=S.position, cap=borrowLtvCap(p);
   if(sim.nd>0 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
-  if(sim.nd>0 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV. Repay more or withdraw less.';
-  if(sim.nd>0 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  if(sim.nd>0 && sim.ltv>cap+0.1) return 'Exceeds '+(p.maxLtv?`your ${Math.round(cap)}% max LTV`:'the safe LTV limit')+'. Repay more, add collateral, or borrow less.';
   return null;
 }
 function applySim(sim, msg){
@@ -1896,8 +2004,8 @@ function fxMath(){
   const feeAmt=received*m.origFee/100;           // origination fee ADDED to the debt
   const totalDebt=debtUnits+feeAmt;
   const colPrice=cPrice(m);
-  const reqCol= colPrice>0 ? (totalDebt/(maxLtv/100))/colPrice : 0; // collateral to open at the cap
-  const col= S.form.col!=null ? S.form.col : reqCol;                // editable; defaults to reqCol
+  const reqCol= colPrice>0 ? (totalDebt/(maxLtv/100))/colPrice : 0; // collateral needed to sit at the cap
+  const col= S.form.col!=null ? S.form.col : 0;                     // user-entered only — never auto-filled
   const colValue= col*colPrice;
   const ltv= colValue>0? totalDebt/colValue*100 : 0;
   const liqPrice= col>0? totalDebt/(col*m.lltv/100):0;
@@ -1928,7 +2036,7 @@ function fxConfigure(){
   const d=fxMath(); const m=d.m; const colBal=d.colBal;
   const maxRecv=Math.floor(fxMaxOpenBorrow());
   const canReview = d.req>0 && d.col>0 && !d.insufficient && !d.overCap && d.unfilled<1;
-  return `<div class="grid">
+  return `<div class="cfg-single">
     <div class="panel">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">${pairBadge(m.col,m.loan)}<div><h4 style="margin:0">${m.col} / ${m.loan}</h4><div class="tag muted tiny">Matures ${m.maturity} (${m.days} days) · <a class="extlink" href="${m.oracleUrl}" target="_blank" rel="noopener noreferrer">${m.oracle} ↗</a> · LLTV ${pct(m.lltv,0)}</div></div></div>
       <div class="field">
@@ -1937,14 +2045,15 @@ function fxConfigure(){
         ${usdSub('fbIn',m.loan,S.form.reqBorrow||0)}
       </div>
       <div class="field">
-        <label><span class="lbl">Collateral<button class="fx-ltvbtn" onclick="openLtvModal()" title="Set max LTV to open">${pct(d.maxLtv,0)} LTV <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></span><span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
+        <label><span class="lbl">Collateral</span><span class="bal">Balance: <b>${money(colBal,3)} ${m.col}</b></span></label>
         <div class="inp"><input id="fcIn" type="text" inputmode="decimal" value="${S.form.col!=null?S.form.col:''}" placeholder="0.00" oninput="fxCol(this.value)">${colAssetBtn(m)}<button class="maxbtn" onclick="fxCol(${colBal})">MAX</button></div>
         ${usdSub('fcIn',m.col,d.col)}
         ${d.insufficient?`<div class="warnrow" style="margin-top:10px">⚠ Needs ${money(d.col,4)} ${m.col}; you hold ${money(colBal,3)}. Borrow less or add collateral.</div>`:d.overLltv?`<div class="warnrow" style="margin-top:10px">⚠ LTV ${pct(d.ltv,1)} exceeds the liquidation LTV (${pct(m.lltv,0)}). The position would be liquidated. Add collateral or borrow less.</div>`:d.overCap?`<div class="warnrow" style="margin-top:10px">⚠ LTV ${pct(d.ltv,1)} exceeds your max LTV (${pct(d.maxLtv,0)}). Add collateral or borrow less.</div>`:''}
       </div>
+      ${ltvBar(d,m)}
       <div class="fx-rate">
-        <div class="r"><div class="l">Fixed rate</div><div class="v" id="fxRate">${d.req?pct(d.blendedApy):'—'}</div></div>
-        <div class="q"><span class="spin"></span> re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</div>
+        <div class="fx-mat">${matBtn(m)}<div class="term tiny">${m.days} days term ${tip(FX_MATURITY_MKT_TIP)}</div></div>
+        <div class="fx-rate-r"><div class="v" id="fxRate">${d.req?pct(d.blendedApy):'—'}</div><div class="q"><span class="spin"></span> re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</div></div>
       </div>
       ${bp('.fx-rate','SDK','Size the borrow','The user picks the loan amount; quote it against the live order book (larger sizes fill deeper, at worse rates). Collateral is derived from your max-open LTV.',
 [
@@ -1956,19 +2065,9 @@ ${cm('// collateral = q.totalDebt / maxOpenLtv')}` },
 { l:'REST', c:
 `GET /v0/midnight/books/{marketId}/bids/quote?assets={amount}&slippage=0.5` },
 ])}
-    </div>
-    <div class="panel">
-      ${healthBar(d.hf)}
-      <div class="rows" style="margin-top:14px">
-        ${R('Receive now', d.received?money(d.received,0)+' '+m.loan:'—','pos')}
-        ${R('Origination fee ('+pct(m.origFee,2)+') '+tip(FEE_TIP), d.feeAmt?'+'+money(d.feeAmt,2)+' '+m.loan:'—')}
-        ${R('Loan at maturity '+tipWarn(FX_EXIT_TIP), d.totalDebt?money(d.totalDebt,2)+' '+m.loan:'—')}
-        ${R('Maturity date '+tipWarn(FX_MATURITY_TIP), m.maturity)}
-        ${R('LTV '+tip(MAX_LTV_TIP), d.req?pct(d.ltv,1)+' / '+pct(m.lltv,0)+' liq':'—')}
-        ${d.unfilled>1?R('⚠ Book slippage', 'Order exceeds available bids','warn'):''}
-      </div>
+      ${d.unfilled>1?`<div class="warnrow" style="margin-top:12px">⚠ Order exceeds available bids — reduce the borrow amount.</div>`:''}
       <div class="divline"></div>
-      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${canReview?'':'disabled'} onclick="next()">Review borrow</button></div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="goStep(0)">Back</button><button class="btn" ${canReview?'':'disabled'} onclick="next()">Review Borrow</button></div>
       <div class="pbm-foot">${poweredBy()}</div>
     </div>
   </div>`;
@@ -1980,10 +2079,7 @@ function fxSetBorrow(req){
   S.form.units=Math.round(req/price); // fee is added to debt, not deducted from proceeds
 }
 function fxBorrow(v){
-  S.form.reqBorrow=Math.max(0, parseFloat((''+v).replace(/,/g,''))||0);
-  S.form.col=null;                                  // re-infer collateral for the new size…
-  const need=Math.round(fxMath().reqCol*1e4)/1e4;
-  S.form.col=Math.min(need, fxColBal(MARKETS_F[S.sel]));  // …pin at the cap, but never beyond the wallet balance
+  S.form.reqBorrow=Math.max(0, parseFloat((''+v).replace(/,/g,''))||0);   // collateral is left to the user (no auto-fill)
   render(); const el=document.getElementById('fbIn'); if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
 }
 function fxCol(v){
@@ -1994,8 +2090,7 @@ function fxCol(v){
 function curLtvMarket(){ return S.product==='fixed'?MARKETS_F[S.sel]:MARKETS_V[S.sel]; }
 function setMaxLtv(v){
   const m=curLtvMarket();
-  S.form.maxLtv=clamp(Math.round(parseFloat(v)||MAX_OPEN_LTV), 10, m.lltv-1);
-  if(S.product==='fixed'){ S.form.col=null; S.form.col=Math.round(fxMath().reqCol*1e4)/1e4; } // fixed infers collateral; variable keeps user's
+  S.form.maxLtv=clamp(Math.round(parseFloat(v)||MAX_OPEN_LTV), 10, m.lltv-1);   // moves the max tick; collateral stays the user's
   const lab=document.getElementById('ltvVal'); if(lab) lab.textContent=S.form.maxLtv+'%';
 }
 function applyLtv(){ closeModal(); render(); }
@@ -2054,7 +2149,7 @@ function fxExecute(){
     </div>
     ${legalFooter()}
     <div class="spacer"></div>
-    <button class="btn" id="signBtn" onclick="fxSign()">Sign & borrow</button>
+    <button class="btn" id="signBtn" onclick="fxSign()">Borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
     ${bp('#bundle','on-chain','Bundle supply + take bids','Quote the book for your size, then execute: the Midnight bundle wraps the collateral permit, supplyCollateral and the take into one atomic signed action.',
@@ -2072,7 +2167,7 @@ function fxSign(){
   runBundle(()=>{
     const d=fxMath();
     // debtUnits on the position is fee-inclusive: what's actually owed at maturity
-    S.position={ type:'fixed', m:d.m, col:d.col, debtUnits:d.totalDebt, received:d.received, blendedApy:d.blendedApy, daysLeft:d.m.days };
+    S.position={ type:'fixed', m:d.m, col:d.col, debtUnits:d.totalDebt, received:d.received, blendedApy:d.blendedApy, daysLeft:d.m.days, maxLtv:d.maxLtv };
     S.txDone=true; toast('Fixed borrow executed'); render();
   });
 }
@@ -2184,12 +2279,12 @@ function fxMaxWithdraw(repay=0){
   const p=S.position, m=p.m;
   const nd=Math.max(0,p.debtUnits - (repay>0?Math.min(repay/fxRepayPrice(),p.debtUnits):0));
   if(nd<=0.005) return p.col;
-  return Math.max(0, p.col - (nd/(m.lltv/100))/cPrice(m)*SAFETY);
+  return Math.max(0, p.col - (nd/(borrowLtvCap(p)/100))/cPrice(m));
 }
 function fxMaxBorrow(add=0){
   const p=S.position, m=p.m;
   const cv=(p.col+add)*cPrice(m);
-  const roomUnits=Math.max(0, cv*m.lltv/100 - p.debtUnits);
+  const roomUnits=Math.max(0, cv*borrowLtvCap(p)/100 - p.debtUnits);
   return roomUnits*fxBorrowPrice()/(1+m.origFee/100);
 }
 function fxSimRows(sim, opts={}){
@@ -2205,10 +2300,9 @@ function fxSimRows(sim, opts={}){
     ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (cleared||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (cleared||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
 }
 function fxSimWarn(sim){
-  const m=S.position.m;
+  const p=S.position, cap=borrowLtvCap(p);
   if(sim.nd>0.005 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
-  if(sim.nd>0.005 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV. Repay more or withdraw less.';
-  if(sim.nd>0.005 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  if(sim.nd>0.005 && sim.ltv>cap+0.1) return 'Exceeds '+(p.maxLtv?`your ${Math.round(cap)}% max LTV`:'the safe LTV limit')+'. Repay more, add collateral, or borrow less.';
   return null;
 }
 function fxApply(sim,msg){
