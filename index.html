@@ -1609,7 +1609,7 @@ function varSign(){
   runBundle(()=>{
     const d=varMath();
     // debt is fee-inclusive; received is what hit the wallet
-    S.position={ type:'variable', m:d.m, col:d.col, debt:d.debt, received:d.borrow, apy:d.m.apy, day:0 };
+    S.position={ type:'variable', m:d.m, col:d.col, debt:d.debt, received:d.borrow, apy:d.m.apy, day:0, maxLtv:d.maxLtv };
     S.txDone=true; toast('Borrow confirmed'); render();
   });
 }
@@ -1689,6 +1689,10 @@ market.repayWithdrawCollateral({ shares: borrowShares, ... });`)}
 /* variable manage modals */
 /* --- variable: simulate the resulting position for any combination of inputs --- */
 const SAFETY = 1.05; // buffer kept above liquidation when withdrawing collateral
+/* LTV ceiling for taking on more exposure (borrow more / withdraw collateral) via a MAX action.
+   Positions opened through the flow carry the integrator max-open cap; seeded/dashboard
+   positions have none, so fall back to the liquidation buffer (reproduces prior behaviour). */
+function borrowLtvCap(p){ return p.maxLtv || (p.m.lltv/SAFETY); }
 function varSim(repay=0, withdraw=0, add=0, borrow=0){
   const p=S.position, m=p.m;
   const feeAmt = borrow*m.origFee/100;
@@ -1705,7 +1709,8 @@ function varMaxWithdraw(repay=0){
   const p=S.position, m=p.m;
   const nd=Math.max(0,p.debt-repay);
   if(nd<=0) return p.col;
-  const need=(nd/(m.lltv/100))/cPrice(m)*SAFETY;
+  // keep the remaining position within the max-open LTV after withdrawal
+  const need=(nd/(borrowLtvCap(p)/100))/cPrice(m);
   return Math.max(0,p.col-need);
 }
 /* what the market can still lend, net of what this position already drew */
@@ -1713,8 +1718,8 @@ function varRemainingLiquidity(p){ return Math.max(0, marketLiquidity(p.m) - (p.
 function varMaxBorrow(add=0){
   const p=S.position, m=p.m;
   const cv=(p.col+add)*cPrice(m);
-  // keep the same safety buffer varSimWarn enforces, so MAX never rejects itself
-  const room=Math.max(0, cv*m.lltv/100/SAFETY - p.debt);
+  // cap new debt at the position's max-open LTV, so MAX never exceeds it
+  const room=Math.max(0, cv*borrowLtvCap(p)/100 - p.debt);
   // bounded by collateral AND by remaining market liquidity
   return Math.min(room/(1+m.origFee/100), varRemainingLiquidity(p));
 }
@@ -1731,10 +1736,9 @@ function varSimRows(sim, opts={}){
     ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (dust||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (dust||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
 }
 function varSimWarn(sim){
-  const m=S.position.m;
+  const p=S.position, cap=borrowLtvCap(p);
   if(sim.nd>0 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
-  if(sim.nd>0 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV. Repay more or withdraw less.';
-  if(sim.nd>0 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  if(sim.nd>0 && sim.ltv>cap+0.1) return 'Exceeds '+(p.maxLtv?`your ${Math.round(cap)}% max LTV`:'the safe LTV limit')+'. Repay more, add collateral, or borrow less.';
   return null;
 }
 function applySim(sim, msg){
@@ -2072,7 +2076,7 @@ function fxSign(){
   runBundle(()=>{
     const d=fxMath();
     // debtUnits on the position is fee-inclusive: what's actually owed at maturity
-    S.position={ type:'fixed', m:d.m, col:d.col, debtUnits:d.totalDebt, received:d.received, blendedApy:d.blendedApy, daysLeft:d.m.days };
+    S.position={ type:'fixed', m:d.m, col:d.col, debtUnits:d.totalDebt, received:d.received, blendedApy:d.blendedApy, daysLeft:d.m.days, maxLtv:d.maxLtv };
     S.txDone=true; toast('Fixed borrow executed'); render();
   });
 }
@@ -2184,12 +2188,12 @@ function fxMaxWithdraw(repay=0){
   const p=S.position, m=p.m;
   const nd=Math.max(0,p.debtUnits - (repay>0?Math.min(repay/fxRepayPrice(),p.debtUnits):0));
   if(nd<=0.005) return p.col;
-  return Math.max(0, p.col - (nd/(m.lltv/100))/cPrice(m)*SAFETY);
+  return Math.max(0, p.col - (nd/(borrowLtvCap(p)/100))/cPrice(m));
 }
 function fxMaxBorrow(add=0){
   const p=S.position, m=p.m;
   const cv=(p.col+add)*cPrice(m);
-  const roomUnits=Math.max(0, cv*m.lltv/100 - p.debtUnits);
+  const roomUnits=Math.max(0, cv*borrowLtvCap(p)/100 - p.debtUnits);
   return roomUnits*fxBorrowPrice()/(1+m.origFee/100);
 }
 function fxSimRows(sim, opts={}){
@@ -2205,10 +2209,9 @@ function fxSimRows(sim, opts={}){
     ${Rd('Liquidation price', usd(cur.liqPrice)+' per '+m.col, (cleared||sim.nc<=0)?'—':usd(sim.liq)+' per '+m.col, (cleared||sim.nc<=0)?'':liqCls(sim.ltv,m.lltv))}`;
 }
 function fxSimWarn(sim){
-  const m=S.position.m;
+  const p=S.position, cap=borrowLtvCap(p);
   if(sim.nd>0.005 && sim.nc<=0) return 'Cannot withdraw all collateral while debt remains.';
-  if(sim.nd>0.005 && sim.ltv>m.lltv+1e-6) return 'Exceeds max LTV. Repay more or withdraw less.';
-  if(sim.nd>0.005 && sim.hf<1.05) return 'Leaves too little safety buffer.';
+  if(sim.nd>0.005 && sim.ltv>cap+0.1) return 'Exceeds '+(p.maxLtv?`your ${Math.round(cap)}% max LTV`:'the safe LTV limit')+'. Repay more, add collateral, or borrow less.';
   return null;
 }
 function fxApply(sim,msg){
