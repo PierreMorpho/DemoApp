@@ -463,6 +463,9 @@ body:not(.genius) .genius-rail{display:none}
 .g-card.open .g-body{display:block}
 .g-body p{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 10px}
 .g-body .code{white-space:pre-wrap;word-break:break-word;overflow-x:visible}
+.g-clabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin:10px 0 4px}
+.g-body .code + .g-clabel,.g-body p + .g-clabel{margin-top:8px}
+.g-body .g-clabel:first-of-type{margin-top:0}
 .g-empty{font-size:12.5px;color:var(--muted2);padding:22px 4px}
 .g-foot{font-size:11px;color:var(--muted2);margin-top:16px;line-height:1.5;padding:0 2px}
 .genius-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);background:var(--panel);padding:6px 12px;border-radius:999px;transition:.15s}
@@ -1018,6 +1021,20 @@ function bp(target, source, title, desc, code){
   GENIUS.items.push({ target: target||null, source: source||'SDK', title, desc, code });
   return '';
 }
+/* ---- Genius code helpers: keep every snippet a real, current Morpho call ----
+   Core protocol data (vaults / markets / positions) is served over GraphQL only
+   (api.morpho.org/graphql); there is no resource-style REST route for it, so the
+   REST block for core cards is the raw HTTP POST to the GraphQL endpoint. Midnight
+   (fixed rate) and rewards (Merkl) expose true REST GET routes, shown as-is. */
+const GQL_URL = 'https://api.morpho.org/graphql';
+function cm(s){ return `<span class="cm">${s}</span>`; }
+// core API card: GraphQL query + the equivalent curl POST to /graphql
+function apiCore(query, inlineQuery){
+  return [
+    { l:'GraphQL · '+GQL_URL, c: query },
+    { l:'REST (HTTP)', c: `curl ${GQL_URL} \\\n  -H ${'"content-type: application/json"'} \\\n  -d '{"query":"${inlineQuery}"}'` },
+  ];
+}
 
 /* legal footer — shown on the first (initial) deposit/borrow confirmation */
 function legalFooter(){
@@ -1132,8 +1149,14 @@ function earnScreen(){
 }
 function earnSelect(){
   return `${Portfolio('earn')}
-    ${bp('.pf-opps','API','Discover vaults','Vault metadata comes from the Morpho API / SDK. Net APY is the all-in rate a depositor actually earns; surface that single number rather than its components.',
-      `<span class="kw">const</span> vaults = <span class="kw">await</span> <span class="fn">fetchVaults</span>({ chainId: <span class="nm">8453</span> });`)}`;
+    ${bp('.pf-opps','API','Discover vaults','Vaults are ERC-4626. List them from the API and surface avgNetApy (the all-in rate after fees and rewards) rather than its parts.',
+      apiCore(
+`query {
+  vaultV2s(where: { chainId_in: [8453] }) {
+    items { address symbol asset { symbol } avgNetApy }
+  }
+}`,
+`{ vaultV2s(where:{chainId_in:[8453]}){ items{ address symbol asset{symbol} avgNetApy } } }`))}`;
 }
 
 /* Deposit page (vault page) — terms + amount + live preview in one */
@@ -1163,8 +1186,12 @@ function earnConfigure(){
       </div>`:''}
 
       ${v.warn?`<div class="warnrow" style="margin-top:12px">⚠ ${v.warn}</div>`:''}
-      ${bp('.vstats','SDK','Read vault + preview','Read live share price and APY; convert the entered amount to shares with previewDeposit, which returns exactly what the deposit will mint.',
-        `<span class="kw">const</span> s = <span class="kw">await</span> vault.<span class="fn">getState</span>();\n<span class="kw">const</span> shares = <span class="kw">await</span> vault.<span class="fn">previewDeposit</span>(assets);`)}
+      ${bp('.vstats','SDK','Read vault + preview','Attach the SDK to a viem client, read the vault, and convert the entered amount to shares before depositing.',
+`const client = createWalletClient({ account, chain, transport })
+  .extend(morphoViemExtension({ supportSignature: true }));
+const vault = client.morpho.vaultV2(vaultAddress, chainId);
+const data  = await vault.getData();      ${cm('// share price, APY')}
+const shares = data.toShares(assets);     ${cm('// preview deposit')}`)}
     </div>
     <div class="panel">
       <div class="field" style="margin-bottom:12px">
@@ -1219,8 +1246,13 @@ function earnExecute(){
     <button class="btn" id="signBtn" onclick="earnSign()">Sign & deposit</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('#bundle','on-chain','Bundle approve + deposit','Permit2 collapses the ERC-20 approval and ERC-4626 deposit into one signed multicall.',
-      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
+    ${bp('#bundle','on-chain','Bundle approve + deposit','Build the deposit with the SDK. getRequirements() surfaces the ERC-20 approval or Permit2 signature; buildTx assembles one signed multicall through Bundler3.',
+`const deposit = vault.deposit({ amount, userAddress, vaultData });
+const sigs = [];
+for (const req of await deposit.getRequirements())
+  'sign' in req ? sigs.push(await req.sign(client, userAddress))
+                : await client.sendTransaction(req);   ${cm('// e.g. approval')}
+await client.sendTransaction(deposit.buildTx(sigs));`)}
   </div>`;
 }
 function earnSign(){
@@ -1308,8 +1340,9 @@ function earnDetail(){
         <div class="rows">${R('Claimable', usd(rewardsClaimable()),'pos')}${R('Source','Merkl')}</div>
         <div class="spacer"></div>
         <button class="btn ghost sm" onclick="openRewards()">Claim rewards</button>
-        ${bp('.rows','SDK','Monitor position','Poll share price × share balance for live value. Rewards accrue off-chain (Merkl) and are claimed separately.',
-          `<span class="kw">const</span> value = <span class="kw">await</span> vault.<span class="fn">convertToAssets</span>(<span class="kw">await</span> vault.<span class="fn">balanceOf</span>(user));`)}
+        ${bp('.rows','SDK','Monitor position','Poll assets = shares times share price for live value. Rewards accrue off-chain via Merkl and are claimed separately.',
+`const shares = await vault.balanceOf(user);
+const value  = await vault.convertToAssets(shares);   ${cm('// live position value')}`)}
       </div>
     </div>
   </div>`;
@@ -1389,8 +1422,10 @@ function openTopup(){
     <div class="field"><label>Deposit<span class="bal">Balance: <b>${money(bal,0)} ${v.asset}</b></span></label>
       <div class="inp"><input id="tIn" type="text" inputmode="decimal" placeholder="0.00" oninput="earnTPrev()"><button class="assetbtn">${tokBadge(v.asset,true)} ${v.asset}</button><button class="maxbtn" onclick="setVal('tIn','${bal}')">MAX</button></div>${usdSub('tIn',v.asset)}</div>
     <div class="rows" id="simRows">${earnSimRows(earnSim())}</div>
-    ${bp('#modal-root .inp','on-chain','Deposit','Same bundled path as the initial supply: the Permit2 approval and the ERC-4626 deposit are collapsed into one signed multicall.',
-      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(asset, assets, sig), <span class="cm">// hidden</span>\n  <span class="fn">erc4626Deposit</span>(vault, assets, receiver),\n]);`)}
+    ${bp('#modal-root .inp','on-chain','Deposit','Same bundled path as the first deposit: getRequirements() then buildTx collapse the approval and the ERC-4626 deposit into one signed multicall.',
+`const deposit = vault.deposit({ amount, userAddress, vaultData });
+${cm('// getRequirements(): approval or Permit2 sig, then one multicall')}
+await client.sendTransaction(deposit.buildTx(sigs));`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doTopup()">Confirm</button>`);
   earnTPrev();
 }
@@ -1408,8 +1443,15 @@ function openRewards(){
   modal('Claim rewards', `
     <div class="rows">${R('Claimable', usd(c),'pos')}${R('Source','Merkl distribution')}${R('Token','MORPHO + partner')}</div>
     <div class="hint">💡 Rewards live outside the vault. Discover the claim, build the Merkl tx, confirm receipt, a flow independent of deposit/withdraw.</div>
-    ${bp('#modal-root .modal-body','off-chain','Claim rewards','Rewards accrue off-chain and are claimed against a Merkl distributor with a Merkle proof.',
-      `<span class="kw">const</span> claims = <span class="kw">await</span> merkl.<span class="fn">getClaims</span>(user);\n<span class="kw">await</span> distributor.<span class="fn">claim</span>(tokens, amounts, proofs);`)}
+    ${bp('#modal-root .modal-body','off-chain','Claim rewards','Rewards accrue off-chain via Merkl. Fetch cumulative amounts and Merkle proofs, then claim on the Merkl distributor. Amounts are cumulative, so pass them as-is.',
+[
+{ l:'REST · Merkl', c:
+`GET https://api.merkl.xyz/v4/users/{address}/rewards?chainId=8453
+${cm('// -> [{ token, amount, claimed, proofs }]  amount is cumulative')}` },
+{ l:'on-chain', c:
+`${cm('// Merkl distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae')}
+distributor.claim(users, tokens, amounts, proofs);` },
+])}
     <div class="spacer"></div><button class="btn" onclick="doClaim(${c})">Claim ${usd(c)}</button>`);
 }
 function doClaim(c){ toast('Claimed '+usd(c)+' in rewards'); closeModal(); }
@@ -1427,8 +1469,19 @@ function variableScreen(){
 }
 function varSelect(){
   return `${Portfolio('borrow')}
-    ${bp('.pf-opps','API','Discover markets','Markets are immutable. Read params + live rate/liquidity from the SDK.',
-      `<span class="kw">const</span> m = <span class="kw">await</span> <span class="fn">getMarket</span>(marketId); <span class="cm">// params, borrowApy, liquidity</span>`)}`;
+    ${bp('.pf-opps','API','Discover markets','Markets are immutable (loan, collateral, oracle, IRM, LLTV). Read params plus live rate and liquidity from the API.',
+apiCore(
+`query {
+  markets(where: { chainId_in: [8453], listed: true }) {
+    items {
+      marketId lltv irmAddress
+      oracle { address }
+      loanAsset { symbol } collateralAsset { symbol }
+      state { borrowApy liquidityAssets utilization }
+    }
+  }
+}`,
+`{ markets(where:{chainId_in:[8453],listed:true}){ items{ marketId lltv irmAddress oracle{address} loanAsset{symbol} collateralAsset{symbol} state{ borrowApy liquidityAssets utilization } } } }`))}`;
 }
 function selMkt(i){ S.sel=i; render(); }
 
@@ -1474,8 +1527,15 @@ function varConfigure(){
         <div class="inp"><input id="borIn" type="text" inputmode="decimal" value="${d.borrow||''}" placeholder="0.00" oninput="varSet('borrow',this.value)"><button class="assetbtn">${tokBadge(m.loan,true)} ${m.loan}</button>${d.col?`<button class="maxbtn" onclick="varSet('borrow',${Math.floor(d.maxBorrow)})">MAX</button>`:''}</div>
         ${usdSub('borIn',m.loan,d.borrow)}
       </div>
-      ${bp('.health','off-chain','Live risk math','Recompute LTV / health / liquidation price on every keystroke: pure math on market params, no tx. A borrow is bounded by the collateral posted and by the loan assets the market can still supply; take the lower of the two.',
-        `maxBorrow = min(\n  collateralValue * lltv,      <span class="cm">// LLTV bound</span>\n  market.totalSupply - market.totalBorrow  <span class="cm">// liquidity bound</span>\n)`)}
+      ${bp('.health','off-chain','Live risk math','Recompute LTV, health and liquidation on every keystroke from market params and the oracle price: pure math, no tx. The oracle returns price() scaled to 1e36.',
+`${cm('// oracle.price(): collateral quoted in loan, scaled 1e36')}
+const p = await oracle.price();
+const collateralValue = collateral * p / 1e36;
+const ltv = borrowed / collateralValue;          ${cm('// vs market.lltv')}
+const maxBorrow = Math.min(
+  collateralValue * lltv,                         ${cm('// LLTV bound')}
+  liquidityAssets                                 ${cm('// available liquidity')}
+);`)}
     </div>
     <div class="panel">
       ${healthBar(d.hf)}
@@ -1536,8 +1596,12 @@ function varExecute(){
     <button class="btn" id="signBtn" onclick="varSign()">Sign & borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('#bundle','on-chain','Bundle supply + borrow','The bundler chains the hidden collateral permit, supplyCollateral and borrow so all land atomically in one signed tx.',
-      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
+    ${bp('#bundle','on-chain','Bundle supply + borrow','Build with the SDK. getRequirements() surfaces token approvals plus the one-time morpho.setAuthorization the bundler needs to open debt; buildTx chains supplyCollateral and borrow atomically.',
+`const market = client.morpho.blue(marketParams, chainId);
+const op = market.supplyCollateralBorrow({
+  amount, borrowAmount, userAddress, positionData });
+${cm('// getRequirements(): approvals + setAuthorization(generalAdapter1)')}
+await client.sendTransaction(op.buildTx(sigs));`)}
   </div>`;
 }
 function varSign(){
@@ -1613,7 +1677,10 @@ function varDetail(){
           <div class="maction" onclick="closeVarPosition()"><div class="mt"><span class="mi">✓</span> Repay all & withdraw</div><div class="md">Clears the debt and returns every ${m.col}</div></div>
         </div>
         ${bp('.rows','SDK','Monitor & manage','Health, LTV and liquidation price are recomputed on every poll. Full repay reads borrowShares and repays by shares to avoid leaving dust debt.',
-          `<span class="kw">const</span> pos = <span class="kw">await</span> <span class="fn">getPosition</span>(marketId, user);\npos.<span class="fn">borrowShares</span>, pos.collateral\n<span class="cm">// full repay:</span> <span class="fn">repay</span>({ shares: pos.borrowShares })`)}
+`const [supplyShares, borrowShares, collateral] =
+  await morpho.position(marketId, user);
+${cm('// full repay by shares (no dust):')}
+market.repayWithdrawCollateral({ shares: borrowShares, ... });`)}
       </div>
     </div>
   </div>`;
@@ -1691,7 +1758,10 @@ function openRepay(){
     <div class="rows" id="simRows">${varSimRows(varSim())}</div>
     <div id="simWarn"></div>
     ${bp('#modal-root .inp','on-chain','Repay + withdraw bundle','Bundled so debt reduction and collateral release land atomically. Repaying the full balance reads borrowShares and repays by shares, avoiding dust.',
-      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">repay</span>(market, assets <span class="cm">/* or shares if max */</span>, user),\n  <span class="fn">withdrawCollateral</span>(market, colAmt, user, user),\n]);`)}
+`const op = market.repayWithdrawCollateral({
+  assets, withdrawAmount, userAddress, positionData });
+${cm('// pass shares instead of assets for a full, dust-free repay')}
+await client.sendTransaction(op.buildTx(sigs));`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doRepay()">Confirm</button>`);
   repayPrev();
 }
@@ -1734,7 +1804,9 @@ function openAddCol(){
     <div id="simWarn"></div>
     <div class="hint">💡 Adding collateral alone improves your buffer; the rate and existing debt don't change.</div>
     ${bp('#modal-root .inp','on-chain','Supply collateral + borrow','Bundled so both land atomically. Borrowing more re-checks health against the new collateral before the tx is sent.',
-      `<span class="kw">await</span> bundler.<span class="fn">multicall</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt, user),\n  <span class="fn">borrow</span>(market, loanAmt, user, user),\n]);`)}
+`const op = market.supplyCollateralBorrow({
+  amount, borrowAmount, userAddress, positionData });
+await client.sendTransaction(op.buildTx(sigs));`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doAddCol()">Confirm</button>`);
   addColPrev();
 }
@@ -1777,8 +1849,15 @@ function fixedScreen(){
 }
 function fxSelect(){
   return `${Portfolio('borrow')}
-    ${bp('.pf-opps','API','Discover fixed markets','Midnight markets are keyed by (loan, collateral, maturity). The router exposes the current bid book to preview the achievable rate.',
-      `<span class="kw">const</span> markets = <span class="kw">await</span> midnight.<span class="fn">listMarkets</span>({ chainId });`)}`;
+    ${bp('.pf-opps','API','Discover fixed markets','Midnight (fixed-rate) markets are keyed by loan, collateral and maturity, and exposed over REST or the Midnight SDK.',
+[
+{ l:'REST · Midnight', c:
+`GET https://api.morpho.org/v0/midnight/markets?chain_ids=8453
+${cm('// -> [{ market_id, loan_token, maturity, ... }]')}` },
+{ l:'SDK', c:
+`import { fetchMarket } from "@morpho-org/midnight-sdk";
+const m = await fetchMarket(client, { marketId });` },
+])}`;
 }
 /* fixed math: walk the bid book */
 function fxQuote(borrowUnits){
@@ -1867,8 +1946,16 @@ function fxConfigure(){
         <div class="r"><div class="l">Fixed rate</div><div class="v" id="fxRate">${d.req?pct(d.blendedApy):'—'}</div></div>
         <div class="q"><span class="spin"></span> re-quotes in <b id="qsecs">${S.fxSecs||15}</b>s</div>
       </div>
-      ${bp('.fx-rate','SDK','Size the borrow','The user picks the loan amount; the router quotes it against the live bid book (larger sizes fill deeper, worse bids) and returns debt units + blended APY. Collateral is derived from the integrator max-open LTV.',
-        `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="cm">// collateral = q.totalDebt / maxOpenLtv</span>`)}
+      ${bp('.fx-rate','SDK','Size the borrow','The user picks the loan amount; quote it against the live order book (larger sizes fill deeper, at worse rates). Collateral is derived from your max-open LTV.',
+[
+{ l:'SDK', c:
+`import { MidnightApi } from "@morpho-org/midnight-sdk/api";
+const q = await MidnightApi.fetchBookQuote({
+  marketId, side: "bids", assets: borrowAmount, slippage: "0.5" });
+${cm('// collateral = q.totalDebt / maxOpenLtv')}` },
+{ l:'REST', c:
+`GET /v0/midnight/books/{marketId}/bids/quote?assets={amount}&slippage=0.5` },
+])}
     </div>
     <div class="panel">
       ${healthBar(d.hf)}
@@ -1970,8 +2057,13 @@ function fxExecute(){
     <button class="btn" id="signBtn" onclick="fxSign()">Sign & borrow</button>
     <div class="spacer"></div>
     <button class="btn ghost sm" onclick="goStep(1)" style="width:100%">Back</button>
-    ${bp('#bundle','on-chain','Bundle supply + take bids','The router auto-fetches executable bids for your size; MidnightBundles wraps the hidden permit, supplyCollateral and takeBids into one atomic signed action.',
-      `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">permit2</span>(collateral, colAmt, sig), <span class="cm">// hidden</span>\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
+    ${bp('#bundle','on-chain','Bundle supply + take bids','Quote the book for your size, then execute: the Midnight bundle wraps the collateral permit, supplyCollateral and the take into one atomic signed action.',
+`const q = await MidnightApi.fetchBookQuote({ marketId,
+  side: "bids", assets: borrowAmount, slippage: "0.5" });
+await walletClient.writeContract({
+  address: MIDNIGHT_BUNDLES, abi: midnightBundlesAbi,
+  functionName: "midnightBundlesV1BuyWithAssetsTargetAndWithdrawCollateral",
+  args: [ /* target, minUnits, taker, permit, q.takes, ... */ ] });`)}
   </div>`;
 }
 function fxSign(){
@@ -2062,7 +2154,9 @@ function fxDetail(){
           <div class="maction" onclick="openExitInfo()"><div class="mt"><span class="mi">ℹ</span> Exit options</div><div class="md">How closing works</div></div>
         </div>
         ${bp('.rows','SDK','Monitor & exit','Read outstanding debt + collateral. Debt is repaid at par at any time; the full fixed interest is owed for the whole term, so there is no early-repayment discount.',
-          `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\npos.debtUnits, pos.collateral, pos.maturity\n<span class="fn">repay</span>(market, amount) <span class="cm">// 1:1, any time</span>`)}
+`import { fetchPosition } from "@morpho-org/midnight-sdk";
+const pos = await fetchPosition(client, { marketId, user });
+${cm('// pos.debt, pos.collateral, and the market maturity')}`)}
       </div>
     </div>
   </div>`;
@@ -2140,8 +2234,12 @@ function openFxRepay(){
       <div class="inp"><input id="wIn" type="text" inputmode="decimal" placeholder="0.00" oninput="fxRepayPrev()"><button class="assetbtn">${tokBadge(m.col,true)} ${m.col}</button><button class="maxbtn" onclick="setVal('wIn',fxMaxWithdraw(val('rIn')).toFixed(4))">MAX</button></div>${usdSub('wIn',m.col)}</div>
     <div class="rows" id="simRows">${fxSimRows(fxSim())}</div>
     <div id="simWarn"></div>
-    ${bp('#modal-root .inp','on-chain','Repay + withdraw','Interest does not accrue over time and there is no secondary market, so debt is always repaid at par. Bundle repay and withdrawCollateral so settlement and collateral release are atomic.',
-      `<span class="kw">const</span> pos = <span class="kw">await</span> midnight.<span class="fn">getPosition</span>(market, user);\n<span class="kw">await</span> midnight.<span class="fn">bundle</span>([\n  <span class="fn">repay</span>(market, amount), <span class="cm">// 1:1 against debt</span>\n  <span class="fn">withdrawCollateral</span>(market, colAmt),\n]);`)}
+    ${bp('#modal-root .inp','on-chain','Repay + withdraw','No accrual over time and no secondary market, so debt repays at par. Repay and withdraw route through the Morpho SDK, bundled so settlement and release are atomic.',
+`${cm('// Midnight repay/withdraw route through the Morpho SDK')}
+const market = client.morpho.blue(marketParams, chainId);
+const op = market.repayWithdrawCollateral({
+  assets, withdrawAmount, userAddress, positionData });
+await client.sendTransaction(op.buildTx(sigs));`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxRepay()">Confirm</button>`);
   fxRepayPrev();
 }
@@ -2176,7 +2274,11 @@ function openAddColFixed(){
     <div id="simWarn"></div>
     <div class="hint">💡 Adding collateral alone improves your buffer; rate and debt don't change. Borrowing more sells additional debt units into the book at the current rate, due on the same maturity date.</div>
     ${bp('#modal-root .inp','on-chain','Supply collateral + take bids','Bundled atomically. New borrow is quoted against the live book for the remaining term, so it settles on the existing maturity date.',
-      `<span class="kw">const</span> q = <span class="kw">await</span> router.<span class="fn">quoteBorrow</span>({ market, borrowAmount });\n<span class="kw">await</span> midnightBundles.<span class="fn">execute</span>([\n  <span class="fn">supplyCollateral</span>(market, colAmt),\n  <span class="fn">takeBids</span>(q.bids, minReceived),\n]);`)}
+`const q = await MidnightApi.fetchBookQuote({ marketId,
+  side: "bids", assets: borrowAmount, slippage: "0.5" });
+await walletClient.writeContract({ address: MIDNIGHT_BUNDLES,
+  abi: midnightBundlesAbi, args: [ /* q.takes, ... */ ],
+  functionName: "midnightBundlesV1BuyWithAssetsTarget..." });`)}
     <div class="spacer"></div><button class="btn" id="simBtn" onclick="doFxAdd()">Confirm</button>`);
   fxAddPrev();
 }
@@ -2325,8 +2427,13 @@ function geniusCard(it){
       <span class="g-title">${it.title}</span>
       <span class="g-chev">▾</span>
     </div>
-    <div class="g-body"><p>${it.desc}</p><div class="code">${it.code}</div></div>
+    <div class="g-body"><p>${it.desc}</p>${geniusCode(it.code)}</div>
   </div>`;
+}
+/* code can be a plain string (one block) or an array of {l:label, c:code} labeled blocks (e.g. GraphQL + REST) */
+function geniusCode(code){
+  if(Array.isArray(code)) return code.map(b=>`<div class="g-clabel">${b.l}</div><div class="code">${b.c}</div>`).join('');
+  return `<div class="code">${code}</div>`;
 }
 function renderGeniusRail(items, ctx){
   GENIUS.view = { items, ctx };
