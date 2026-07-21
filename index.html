@@ -471,7 +471,7 @@ body:not(.genius) .genius-rail{display:none}
 .genius-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);background:var(--panel);padding:6px 12px;border-radius:999px;transition:.15s}
 .genius-toggle:hover{color:var(--text);border-color:var(--border2)}
 .genius-toggle.on{color:var(--accent2);border-color:var(--accent2);background:var(--accent-soft)}
-.genius-halo{outline:2px solid var(--accent2)!important;outline-offset:3px;border-radius:9px}
+.genius-halo{outline:2px solid var(--accent2)!important;outline-offset:3px}
 @media(max-width:1023px){body.genius{padding-right:0}body.genius .modal-bg{right:0}body.genius .toast-wrap{left:50%}.genius-rail{display:none!important}#geniusToggle{display:none!important}}
 
 /* Fixed-rate: inferred collateral box + prominent live rate */
@@ -2448,9 +2448,9 @@ function renderGeniusRail(items, ctx){
 }
 function geniusHover(target, on){
   if(!S.genius || !target) return;
-  const el=document.querySelector(target); if(!el) return;
-  if(on) el.classList.add('genius-halo');
-  else if(target!==S.geniusExpanded) el.classList.remove('genius-halo');
+  const els=document.querySelectorAll(target); if(!els.length) return;   // a card can feed more than one element (e.g. two modal inputs)
+  if(on) els.forEach(el=>el.classList.add('genius-halo'));
+  else if(target!==S.geniusExpanded) els.forEach(el=>el.classList.remove('genius-halo'));
 }
 function geniusExpand(target){
   if(!target) return;
@@ -2459,7 +2459,7 @@ function geniusExpand(target){
 }
 function applyGeniusHalo(){
   document.querySelectorAll('.genius-halo').forEach(el=>el.classList.remove('genius-halo'));
-  if(S.genius && S.geniusExpanded){ const el=document.querySelector(S.geniusExpanded); if(el) el.classList.add('genius-halo'); }
+  if(S.genius && S.geniusExpanded){ document.querySelectorAll(S.geniusExpanded).forEach(el=>el.classList.add('genius-halo')); }
 }
 // landing note hover → light up the Genius Mode toggle
 function geniusHint(on){ const b=document.getElementById('geniusToggle'); if(b) b.classList.toggle('lit', !!on); }
